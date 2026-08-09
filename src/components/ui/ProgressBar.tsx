@@ -6,6 +6,8 @@ interface ProgressBarProps {
   progress: number; // 0 to 1
   size?: 'small' | 'medium' | 'large';
   color?: string;
+  height?: number;
+  style?: any;
   showLabel?: boolean;
 }
 
@@ -13,12 +15,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   progress,
   size = 'medium',
   color,
+  height,
+  style,
   showLabel = false,
 }) => {
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <View style={[styles.track, styles[size]]}>
         <View
           style={[

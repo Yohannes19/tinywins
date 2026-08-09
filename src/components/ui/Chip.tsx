@@ -9,6 +9,8 @@ interface ChipProps {
   selected?: boolean;
   onPress?: () => void;
   color?: string;
+  selectedColor?: string;
+  style?: any;
 }
 
 export const Chip: React.FC<ChipProps> = ({
@@ -17,13 +19,24 @@ export const Chip: React.FC<ChipProps> = ({
   selected = false,
   onPress,
   color,
+  selectedColor,
+  style,
 }) => {
+  const selectedStyles = selected
+    ? {
+        backgroundColor: selectedColor || colors.primary,
+        borderColor: selectedColor || colors.primary,
+      }
+    : {};
+
   return (
     <TouchableOpacity
       style={[
         styles.container,
         selected && styles.selected,
+        selected && selectedStyles,
         color && !selected && { borderColor: color },
+        style,
       ]}
       onPress={onPress}
       activeOpacity={0.7}
@@ -35,6 +48,7 @@ export const Chip: React.FC<ChipProps> = ({
           styles.text,
           selected && styles.selectedText,
           color && !selected && { color },
+          icon && { marginLeft: spacing.xs },
         ]}
         numberOfLines={1}
       >
@@ -57,11 +71,9 @@ const styles = StyleSheet.create({
     marginRight: spacing.sm,
   },
   selected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderWidth: 1,
   },
   text: {
-    marginLeft: icon ? spacing.xs : 0,
     color: colors.textSecondary,
   },
   selectedText: {

@@ -12,6 +12,7 @@ interface ButtonProps {
   loading?: boolean;
   icon?: React.ReactNode;
   fullWidth?: boolean;
+  style?: any;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -23,6 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   icon,
   fullWidth = false,
+  style,
 }) => {
   return (
     <TouchableOpacity
@@ -32,6 +34,7 @@ export const Button: React.FC<ButtonProps> = ({
         styles[size],
         fullWidth && styles.fullWidth,
         disabled && styles.disabled,
+        style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}

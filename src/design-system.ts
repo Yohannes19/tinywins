@@ -153,6 +153,13 @@ export const Typography = {
       lineHeight: 21.6,
       color: Colors.neutral.textPrimary,
     },
+    h4: {
+      fontFamily: 'Nunito_600SemiBold',
+      fontSize: 16,
+      lineHeight: 20,
+      letterSpacing: -0.2,
+      color: Colors.neutral.textPrimary,
+    },
     bodyLarge: {
       fontFamily: 'Inter_500Medium',
       fontSize: 16,
@@ -163,6 +170,12 @@ export const Typography = {
       fontFamily: 'Inter_400Regular',
       fontSize: 16,
       lineHeight: 24,
+      color: Colors.neutral.textSecondary,
+    },
+    bodySmall: {
+      fontFamily: 'Inter_400Regular',
+      fontSize: 14,
+      lineHeight: 20,
       color: Colors.neutral.textSecondary,
     },
     caption: {
@@ -312,6 +325,7 @@ export const Animation = {
     instant: 100,
     fast: 200,
     normal: 300,
+    medium: 300,
     slow: 500,
     deliberate: 800,
   },
@@ -393,5 +407,75 @@ export const Theme = {
   animation: Animation,
   zIndex: ZIndex,
 };
+
+export const colors = {
+  primary: Colors.primary.main,
+  secondary: Colors.primary.light,
+  success: Colors.success.main,
+  warning: Colors.warning.main,
+  error: Colors.error.main,
+  info: Colors.info.main,
+  background: {
+    light: Colors.neutral.bgLight,
+    card: Colors.neutral.surfaceLight,
+    dark: Colors.neutral.bgDark,
+    surface: Colors.neutral.surfaceDark,
+  },
+  surface: Colors.neutral.surfaceLight,
+  text: {
+    primary: Colors.neutral.textPrimary,
+    secondary: Colors.neutral.textSecondary,
+    tertiary: Colors.neutral.textTertiary,
+    inverse: Colors.neutral.textInverse,
+  },
+  textPrimary: Colors.neutral.textPrimary,
+  textSecondary: Colors.neutral.textSecondary,
+  textTertiary: Colors.neutral.textTertiary,
+  textInverse: Colors.neutral.textInverse,
+  border: Colors.neutral.border,
+  borderFocus: Colors.neutral.borderFocus,
+  borderLight: Colors.neutral.border,
+  accent: {
+    coral: Colors.error.main,
+    gold: Colors.awards.gold,
+  },
+  category: {
+    clean: Colors.categories.clean.main,
+    email: Colors.categories.email.main,
+    tax: Colors.categories.tax.main,
+    laundry: Colors.categories.laundry.main,
+    dishes: Colors.categories.dishes.main,
+    shower: Colors.categories.shower.main,
+    call: Colors.categories.call.main,
+    other: Colors.categories.other.main,
+  },
+  categoryLight: {
+    clean: Colors.categories.clean.light,
+    email: Colors.categories.email.light,
+    tax: Colors.categories.tax.light,
+    laundry: Colors.categories.laundry.light,
+    dishes: Colors.categories.dishes.light,
+    shower: Colors.categories.shower.light,
+    call: Colors.categories.call.light,
+    other: Colors.categories.other.light,
+  },
+  categoryIcon: {
+    clean: Colors.categories.clean.icon,
+    email: Colors.categories.email.icon,
+    tax: Colors.categories.tax.icon,
+    laundry: Colors.categories.laundry.icon,
+    dishes: Colors.categories.dishes.icon,
+    shower: Colors.categories.shower.icon,
+    call: Colors.categories.call.icon,
+    other: Colors.categories.other.icon,
+  },
+  award: Colors.awards,
+};
+
+export const typography = Typography.styles;
+export const spacing = Spacing;
+export const borderRadius = Borders.radius;
+export const shadows = Shadows;
+export const animations = Animation;
 
 export type ThemeType = typeof Theme;

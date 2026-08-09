@@ -15,6 +15,7 @@ interface InputProps {
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   editable?: boolean;
+  style?: any;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -43,6 +44,7 @@ export const Input: React.FC<InputProps> = ({
           multiline && styles.multiline,
           error && styles.inputError,
           !editable && styles.disabled,
+          style,
         ]}
         placeholder={placeholder}
         value={value}
@@ -74,15 +76,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   input: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderWidth: 2,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    fontSize: 16,
-    color: colors.textPrimary,
     ...typography.body,
+    color: colors.textPrimary,
     minHeight: 52,
   },
   multiline: {

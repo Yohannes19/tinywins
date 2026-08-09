@@ -7,6 +7,8 @@ interface CardProps {
   children: React.ReactNode;
   variant?: 'default' | 'elevated' | 'outlined';
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  elevation?: 'none' | 'sm' | 'md' | 'lg';
+  style?: any;
   onPress?: () => void;
 }
 
@@ -14,7 +16,8 @@ export const Card: React.FC<CardProps> = ({
   children,
   variant = 'default',
   padding = 'md',
-  onPress,
+  elevation = 'sm',
+  style,
 }) => {
   return (
     <View
@@ -22,6 +25,8 @@ export const Card: React.FC<CardProps> = ({
         styles.container,
         styles[variant],
         styles[`${padding}Padding`],
+        styles[elevation],
+        style,
       ]}
     >
       {children}
@@ -43,6 +48,16 @@ const styles = StyleSheet.create({
   outlined: {
     borderWidth: 1,
     borderColor: colors.border,
+  },
+  none: {},
+  sm: {
+    ...shadows.sm,
+  },
+  md: {
+    ...shadows.md,
+  },
+  lg: {
+    ...shadows.lg,
   },
   nonePadding: {
     padding: 0,

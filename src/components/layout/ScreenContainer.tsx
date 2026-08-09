@@ -12,7 +12,7 @@ interface ScreenContainerProps {
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   children,
-  backgroundColor = colors.background,
+  backgroundColor = colors.background.light,
   ignoreTopSafeArea = false,
   ignoreBottomSafeArea = false,
 }) => {

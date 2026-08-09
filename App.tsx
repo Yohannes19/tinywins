@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ScreenContainer } from './src/components/layout';
+import DashboardScreen from './src/screens/DashboardScreen';
 import { Text, Button, ProgressBar, Card } from './src/components/ui';
 import { colors, spacing } from './src/design-system';
 
@@ -72,36 +73,13 @@ const SplashScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) => {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
 
-  if (isLoading) {
-    return <SplashScreen onComplete={() => setIsLoading(false)} />;
-  }
-
   return (
     <SafeAreaProvider>
-      <ScreenContainer backgroundColor={colors.background}>
-        <View style={styles.container}>
-          <Text variant="h2">Welcome to TinyWins 2.0</Text>
-          <Text variant="body" style={{ marginTop: spacing.md, color: colors.textSecondary }}>
-            Your journey to productivity starts here!
-          </Text>
-          
-          <Card style={{ marginTop: spacing.xl }} padding="lg">
-            <Text variant="h3">Today's Progress</Text>
-            <ProgressBar progress={0.6} style={{ marginTop: spacing.md }} />
-            <Text variant="caption" style={{ marginTop: spacing.sm, color: colors.textSecondary }}>
-              3 of 5 tasks completed
-            </Text>
-          </Card>
-
-          <Button 
-            onPress={() => {}} 
-            style={{ marginTop: spacing.xl }}
-            fullWidth
-          >
-            Add New Task
-          </Button>
-        </View>
-      </ScreenContainer>
+      {isLoading ? (
+        <SplashScreen onComplete={() => setIsLoading(false)} />
+      ) : (
+        <DashboardScreen />
+      )}
     </SafeAreaProvider>
   );
 }

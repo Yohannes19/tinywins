@@ -7,12 +7,14 @@ interface ContentContainerProps {
   children: ReactNode;
   scrollable?: boolean;
   contentContainerStyle?: any;
+  style?: any;
 }
 
 export const ContentContainer: React.FC<ContentContainerProps> = ({
   children,
   scrollable = false,
   contentContainerStyle,
+  style,
 }) => {
   const insets = useSafeAreaInsets();
 
@@ -26,6 +28,7 @@ export const ContentContainer: React.FC<ContentContainerProps> = ({
           paddingTop: spacing.lg,
         },
         contentContainerStyle,
+        style,
       ]}
     >
       {children}

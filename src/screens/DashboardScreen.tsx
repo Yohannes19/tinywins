@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Dimensions, TouchableOpacity, Modal, Animated } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Trophy, CheckCircle, Circle, Plus, Flame, Award, X } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   ScreenContainer, 
@@ -12,11 +10,22 @@ import {
   Button, 
   Card, 
   ProgressBar, 
-  Chip 
+  Chip,
+  Input,
 } from '../components/ui';
 import { colors, spacing, typography, shadows, animations } from '../design-system';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const ICONS = {
+  trophy: '🏆',
+  check: '✅',
+  circle: '◯',
+  plus: '➕',
+  flame: '🔥',
+  award: '🏅',
+  close: '✖️',
+};
 
 interface Task {
   id: string;
@@ -39,7 +48,7 @@ interface Award {
 }
 
 const CATEGORIES = [
-  { id: 'all', name: 'All', color: colors.primary },
+  { id: 'all', name: 'All', color: colors.primary, icon: '✨' },
   { id: 'clean', name: 'Clean', color: colors.category.clean, icon: '🧹' },
   { id: 'email', name: 'Email', color: colors.category.email, icon: '📧' },
   { id: 'tax', name: 'Tax', color: colors.category.tax, icon: '📄' },
@@ -223,17 +232,19 @@ export default function DashboardScreen() {
                 Small steps, big wins
               </Text>
             </View>
-            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <View style={{ flexDirection: 'row' }}>
               <TouchableOpacity 
                 onPress={() => setShowAwardsModal(true)}
                 style={{
                   backgroundColor: colors.background.card,
                   padding: spacing.md,
                   borderRadius: 16,
-                  ...shadows.sm
+                  ...shadows.sm,
                 }}
               >
-                <Trophy size={24} color={colors.award.gold} />
+                <Text variant="h4" style={{ color: colors.award.gold }}>
+                  {ICONS.trophy}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 onPress={() => setShowAddTaskModal(true)}
@@ -241,10 +252,13 @@ export default function DashboardScreen() {
                   backgroundColor: colors.primary,
                   padding: spacing.md,
                   borderRadius: 16,
-                  ...shadows.md
+                  ...shadows.md,
+                  marginLeft: spacing.sm,
                 }}
               >
-                <Plus size={24} color={colors.text.inverse} />
+                <Text variant="h4" style={{ color: colors.text.inverse }}>
+                  {ICONS.plus}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -260,7 +274,7 @@ export default function DashboardScreen() {
                 height: 80, 
                 borderRadius: 40,
                 borderWidth: 6,
-                borderColor: colors.border.light,
+                borderColor: colors.border,
                 marginRight: spacing.lg,
                 justifyContent: 'center',
                 alignItems: 'center'
@@ -279,13 +293,15 @@ export default function DashboardScreen() {
                   height={8}
                   style={{ marginBottom: spacing.sm }}
                 />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Text variant="caption" style={{ color: colors.text.secondary }}>
                     {completedSteps}/{totalSteps} steps
                   </Text>
                   {streak > 0 && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                      <Flame size={16} color={colors.accent.coral} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text variant="caption" style={{ color: colors.accent.coral, marginRight: spacing.xs }}>
+                        {ICONS.flame}
+                      </Text>
                       <Text variant="caption" style={{ color: colors.accent.coral, fontWeight: '600' }}>
                         {streak} day streak
                       </Text>
@@ -301,7 +317,7 @@ export default function DashboardScreen() {
             horizontal 
             showsHorizontalScrollIndicator={false}
             style={{ marginBottom: spacing.lg }}
-            contentContainerStyle={{ gap: spacing.sm }}
+            contentContainerStyle={{ paddingRight: spacing.sm }}
           >
             {CATEGORIES.map(category => (
               <Chip
@@ -340,7 +356,8 @@ export default function DashboardScreen() {
                       marginBottom: spacing.md,
                       borderLeftWidth: 4,
                       borderLeftColor: getCategoryColor(task.category),
-                      padding: spacing.md
+                      padding: spacing.md,
+                      backgroundColor: colors.background.card,
                     }}
                   >
                     <TouchableOpacity 
@@ -348,9 +365,13 @@ export default function DashboardScreen() {
                       style={{ flexDirection: 'row', alignItems: 'center' }}
                     >
                       {task.completed ? (
-                        <CheckCircle size={24} color={colors.success} />
+                        <Text variant="h4" style={{ color: colors.success }}>
+                          {ICONS.check}
+                        </Text>
                       ) : (
-                        <Circle size={24} color={colors.text.tertiary} />
+                        <Text variant="h4" style={{ color: colors.text.tertiary }}>
+                          {ICONS.circle}
+                        </Text>
                       )}
                       <View style={{ flex: 1, marginLeft: spacing.md }}>
                         <Text 
@@ -400,12 +421,14 @@ export default function DashboardScreen() {
                 Your Awards ({unlockedAwardsCount}/{awards.length})
               </Text>
               <TouchableOpacity onPress={() => setShowAwardsModal(false)}>
-                <X size={24} color={colors.text.secondary} />
+                <Text variant="h4" style={{ color: colors.text.secondary }}>
+                  {ICONS.close}
+                </Text>
               </TouchableOpacity>
             </View>
             
             <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={{ gap: spacing.md }}>
+              <View style={styles.awardList}>
                 {awards.map(award => (
                   <Card 
                     key={award.id}
@@ -440,7 +463,9 @@ export default function DashboardScreen() {
                         </Text>
                       </View>
                       {award.unlocked ? (
-                        <Award size={24} color={award.color} />
+                        <Text variant="h4" style={{ color: award.color }}>
+                          {ICONS.award}
+                        </Text>
                       ) : (
                         <View style={{ 
                           paddingHorizontal: spacing.sm,
@@ -491,39 +516,34 @@ export default function DashboardScreen() {
                 Add New Task
               </Text>
               <TouchableOpacity onPress={() => setShowAddTaskModal(false)}>
-                <X size={24} color={colors.text.secondary} />
+                <Text variant="h4" style={{ color: colors.text.secondary }}>
+                  {ICONS.close}
+                </Text>
               </TouchableOpacity>
             </View>
             
-            <View style={{ gap: spacing.lg }}>
-              <View>
+            <View style={styles.modalSection}>
+              <View style={styles.modalRow}>
                 <Text variant="body" style={{ color: colors.text.primary, marginBottom: spacing.sm }}>
                   Task Title
                 </Text>
-                <View style={{ 
-                  borderWidth: 1,
-                  borderColor: colors.border.light,
-                  borderRadius: 12,
-                  padding: spacing.md,
-                  backgroundColor: colors.background.light
-                }}>
-                  <input
-                    value={newTaskTitle}
-                    onChangeText={setNewTaskTitle}
-                    placeholder="e.g., Morning meditation"
-                    style={{ fontSize: 16, color: colors.text.primary }}
-                  />
-                </View>
+                <Input
+                  label="Task Title"
+                  placeholder="e.g., Morning meditation"
+                  value={newTaskTitle}
+                  onChangeText={setNewTaskTitle}
+                  style={{ backgroundColor: colors.background.light, borderColor: colors.borderLight }}
+                />
               </View>
               
-              <View>
+              <View style={styles.modalRow}>
                 <Text variant="body" style={{ color: colors.text.primary, marginBottom: spacing.sm }}>
                   Category
                 </Text>
                 <ScrollView 
                   horizontal 
                   showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: spacing.sm }}
+                  contentContainerStyle={{ paddingRight: spacing.sm }}
                 >
                   {CATEGORIES.filter(c => c.id !== 'all').map(category => (
                     <Chip
@@ -552,3 +572,15 @@ export default function DashboardScreen() {
     </ScreenContainer>
   );
 }
+
+const styles = {
+  awardList: {
+    paddingBottom: spacing.lg,
+  },
+  modalSection: {
+    paddingBottom: spacing.lg,
+  },
+  modalRow: {
+    marginBottom: spacing.lg,
+  },
+};
