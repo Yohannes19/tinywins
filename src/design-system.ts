@@ -4,11 +4,11 @@
  * This file serves as the "Figma Styles" equivalent for the application.
  * All visual decisions are centralized here for consistency.
  * 
- * Design Philosophy: "Soft Focus Productivity"
- * - Clean, airy interfaces with soft shadows (Neomorphism hints)
- * - High contrast for readability
- * - Playful but professional animations
- * - Mobile-first responsive scaling
+ * Design Philosophy: "Mastercard-Inspired Professional Productivity"
+ * - Clean, professional interfaces with bold color contrasts
+ * - Dark green and white primary palette
+ * - Modern, geometric sans-serif typography
+ * - Strong visual hierarchy with overlapping circular elements
  */
 
 // ==========================================
@@ -16,20 +16,28 @@
 // ==========================================
 
 export const Colors = {
-  // PRIMARY BRAND COLORS
+  // PRIMARY BRAND COLORS (Mastercard-inspired)
   primary: {
-    main: '#5B5FC7',      // Refined periwinkle - Main brand color
-    light: '#7B80D9',     // Hover states, active elements
-    dark: '#4A4DB8',      // Pressed states, depth
-    tint: '#EBEDF7',      // Background tints for primary elements
+    main: '#0A5C36',      // Deep forest green - Main brand color (Mastercard-style)
+    light: '#1B7A4E',     // Lighter green for hover states
+    dark: '#063D24',      // Darker green for pressed states
+    tint: '#E8F5ED',      // Background tints for primary elements
+  },
+
+  // SECONDARY ACCENT (Mastercard orange/red inspired)
+  secondary: {
+    main: '#EB6841',      // Warm coral/orange - Accent color
+    light: '#F08969',     // Lighter coral
+    dark: '#C94A2B',      // Darker coral
+    tint: '#FEF2EF',      // Background tints
   },
 
   // SEMANTIC COLORS (Status & Feedback)
   success: {
-    main: '#10B981',      // Emerald green - Completed tasks, positive feedback
-    light: '#34D399',
-    dark: '#059669',
-    tint: '#ECFDF5',
+    main: '#0A5C36',      // Forest green - Completed tasks, positive feedback
+    light: '#2D8A5A',
+    dark: '#063D24',
+    tint: '#E8F5ED',
   },
   warning: {
     main: '#F59E0B',      // Amber - Pending tasks, cautions
@@ -38,56 +46,56 @@ export const Colors = {
     tint: '#FFFBEB',
   },
   error: {
-    main: '#EF4444',      // Red - Errors, deletions
-    light: '#F87171',
-    dark: '#DC2626',
-    tint: '#FEF2F2',
+    main: '#EB6841',      // Coral red - Errors, deletions
+    light: '#F08969',
+    dark: '#C94A2B',
+    tint: '#FEF2EF',
   },
   info: {
-    main: '#3B82F6',      // Blue - Info badges, neutral positives
-    light: '#60A5FA',
-    dark: '#2563EB',
-    tint: '#EFF6FF',
+    main: '#0A5C36',      // Forest green - Info badges
+    light: '#2D8A5A',
+    dark: '#063D24',
+    tint: '#E8F5ED',
   },
 
   // NEUTRALS (Text & Backgrounds)
   neutral: {
     white: '#FFFFFF',
-    bgLight: '#F5F7FA',   // Main app background (Light Mode) - softer gray
+    bgLight: '#FAFBFA',   // Main app background (Light Mode) - subtle green tint
     surfaceLight: '#FFFFFF', // Cards, inputs (Light Mode)
     
-    bgDark: '#0F1115',    // Main app background (Dark Mode)
-    surfaceDark: '#1A1D24', // Cards, inputs (Dark Mode)
+    bgDark: '#0A1410',    // Main app background (Dark Mode) - very dark green
+    surfaceDark: '#14201A', // Cards, inputs (Dark Mode)
     
-    textPrimary: '#1A1A2E', // Headings, primary text - deeper navy
-    textSecondary: '#5A5A72', // Body text, subtitles - softer
-    textTertiary: '#9A9AAF', // Placeholders, disabled text
+    textPrimary: '#0A1410', // Headings, primary text - almost black with green undertone
+    textSecondary: '#3D4A42', // Body text, subtitles - dark gray-green
+    textTertiary: '#6B7A72', // Placeholders, disabled text
     textInverse: '#FFFFFF', // Text on dark backgrounds
     
-    border: '#E8EAF0',    // Dividers, borders - softer
-    borderFocus: '#6C5DD3', // Focused input borders
+    border: '#E0E5E2',    // Dividers, borders - soft green-gray
+    borderFocus: '#0A5C36', // Focused input borders
   },
 
-  // TASK CATEGORY COLORS (Distinct & Accessible)
+  // TASK CATEGORY COLORS (Refined to match brand)
   categories: {
-    clean: { main: '#EF4444', light: '#FEE2E2', icon: '🧹' },
-    email: { main: '#06B6D4', light: '#CCFBF1', icon: '📧' },
-    tax:   { main: '#F59E0B', light: '#FEF3C7', icon: '📄' },
-    laundry:{ main: '#8B5CF6', light: '#EDE9FE', icon: '👕' },
-    dishes:{ main: '#F97316', light: '#FFEDD5', icon: '🍽️' },
-    shower:{ main: '#3B82F6', light: '#DBEAFE', icon: '🚿' },
-    call:  { main: '#EC4899', light: '#FCE7F3', icon: '📞' },
-    other: { main: '#6B7280', light: '#F3F4F6', icon: '✨' },
+    clean: { main: '#EB6841', light: '#FEF2EF', icon: '🧹' },
+    email: { main: '#0A5C36', light: '#E8F5ED', icon: '📧' },
+    tax:   { main: '#F59E0B', light: '#FFFBEB', icon: '📄' },
+    laundry:{ main: '#5B7A8C', light: '#EEF4F7', icon: '👕' },
+    dishes:{ main: '#EB6841', light: '#FEF2EF', icon: '🍽️' },
+    shower:{ main: '#4A9FA8', light: '#ECF7F8', icon: '🚿' },
+    call:  { main: '#8B5A7A', light: '#F5EEF2', icon: '📞' },
+    other: { main: '#6B7A72', light: '#F0F3F1', icon: '✨' },
   },
 
-  // AWARD TIERS COLORS
+  // AWARD TIERS COLORS (Metallic tones)
   awards: {
     bronze: '#CD7F32',
     silver: '#C0C0C0',
     gold: '#FFD700',
     platinum: '#E5E4E2',
     diamond: '#B9F2FF',
-    legend: '#FF6B6B',
+    legend: '#EB6841',
   },
 };
 
@@ -95,13 +103,13 @@ export const Colors = {
 // 2. TYPOGRAPHY SYSTEM
 // ==========================================
 // Font Families: 
-// - Headings: 'Nunito' (Rounded, friendly, approachable)
-// - Body: 'Inter' (Clean, highly readable, modern)
+// - Headings: 'Inter' or 'Helvetica Neue' (Clean, geometric, professional - Mastercard-style)
+// - Body: 'Inter' (Highly readable, modern sans-serif)
 
 export const Typography = {
   fontFamilies: {
-    heading: 'Nunito_700Bold', // Bold for impact
-    headingSemi: 'Nunito_600SemiBold',
+    heading: 'Inter_700Bold', // Bold, geometric for impact
+    headingSemi: 'Inter_600SemiBold',
     body: 'Inter_400Regular',
     bodyMedium: 'Inter_500Medium',
     bodyBold: 'Inter_600SemiBold',
@@ -120,41 +128,42 @@ export const Typography = {
   },
 
   lineHeights: {
-    tight: 1.2,   // Headings
+    tight: 1.15,  // Headings - tighter for professional look
     normal: 1.5,  // Body text
     relaxed: 1.75,// Long form reading
   },
 
   letterSpacings: {
-    tight: -0.5,  // Large headings
+    tight: -0.8,  // Large headings - tighter tracking like Mastercard
     normal: 0,
-    wide: 0.5,    // Uppercase labels
+    wide: 0.8,    // Uppercase labels
   },
 
   // Pre-defined Styles (Like Figma Text Styles)
   styles: {
     h1: {
-      fontFamily: 'Nunito_700Bold',
+      fontFamily: 'Inter_700Bold',
       fontSize: 32,
-      lineHeight: 38.4, // 1.2
-      letterSpacing: -0.5,
+      lineHeight: 36.8, // 1.15
+      letterSpacing: -0.8,
       color: Colors.neutral.textPrimary,
     },
     h2: {
-      fontFamily: 'Nunito_700Bold',
+      fontFamily: 'Inter_700Bold',
       fontSize: 24,
-      lineHeight: 28.8,
-      letterSpacing: -0.3,
+      lineHeight: 27.6,
+      letterSpacing: -0.5,
       color: Colors.neutral.textPrimary,
     },
     h3: {
-      fontFamily: 'Nunito_600SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       fontSize: 18,
       lineHeight: 21.6,
+      letterSpacing: -0.3,
       color: Colors.neutral.textPrimary,
     },
     h4: {
-      fontFamily: 'Nunito_600SemiBold',
+      fontFamily: 'Inter_600SemiBold',
       fontSize: 16,
       lineHeight: 20,
       letterSpacing: -0.2,
@@ -186,16 +195,16 @@ export const Typography = {
     },
     button: {
       fontFamily: 'Inter_600SemiBold',
-      fontSize: 16,
-      lineHeight: 24,
-      letterSpacing: 0.5,
+      fontSize: 14,
+      lineHeight: 20,
+      letterSpacing: 0.8,
       textTransform: 'uppercase' as const,
     },
     label: {
       fontFamily: 'Inter_500Medium',
-      fontSize: 14,
-      lineHeight: 20,
-      letterSpacing: 0.5,
+      fontSize: 12,
+      lineHeight: 18,
+      letterSpacing: 0.8,
       textTransform: 'uppercase' as const,
       color: Colors.neutral.textTertiary,
     },
@@ -262,7 +271,7 @@ export const Borders = {
 // ==========================================
 // 5. SHADOWS & ELEVATION
 // ==========================================
-// Refined shadows with softer, more diffused feel
+// Clean, professional shadows with subtle depth
 
 export const Shadows = {
   // Format: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation (Android) }
@@ -276,42 +285,42 @@ export const Shadows = {
   },
   
   sm: {
-    shadowColor: '#1A1A2E',
+    shadowColor: '#0A1410',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
     elevation: 2,
   },
   
   md: {
-    shadowColor: '#1A1A2E',
+    shadowColor: '#0A1410',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 4,
   },
   
   lg: {
-    shadowColor: '#1A1A2E',
+    shadowColor: '#0A1410',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.16,
-    shadowRadius: 20,
+    shadowOpacity: 0.12,
+    shadowRadius: 24,
     elevation: 8,
   },
   
   xl: {
-    shadowColor: '#1A1A2E',
+    shadowColor: '#0A1410',
     shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.2,
-    shadowRadius: 32,
+    shadowOpacity: 0.16,
+    shadowRadius: 36,
     elevation: 12,
   },
   
-  // Colored shadows for specific interactions (e.g., Primary Button)
+  // Colored shadows for primary brand elements (green)
   primary: {
-    shadowColor: '#5B5FC7',
+    shadowColor: '#0A5C36',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.3,
     shadowRadius: 12,
     elevation: 6,
   },
@@ -415,7 +424,9 @@ export const colors = {
   primaryLight: Colors.primary.light,
   primaryDark: Colors.primary.dark,
   primaryTint: Colors.primary.tint,
-  secondary: Colors.primary.light,
+  secondary: Colors.secondary.main,
+  secondaryLight: Colors.secondary.light,
+  secondaryDark: Colors.secondary.dark,
   success: Colors.success.main,
   warning: Colors.warning.main,
   error: Colors.error.main,
