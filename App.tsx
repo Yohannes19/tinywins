@@ -291,15 +291,27 @@ export default function App() {
   const [showStats, setShowStats] = useState(false);
   const [showAwards, setShowAwards] = useState(false);
   const [streak, setStreak] = useState(() => {
-    const saved = localStorage.getItem('tinywins-streak');
-    return saved ? parseInt(saved, 10) : 0;
+    try {
+      const saved = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-streak') : null;
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
   });
   const [lastCompletionDate, setLastCompletionDate] = useState(() => {
-    return localStorage.getItem('tinywins-last-date') || null;
+    try {
+      return typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-last-date') : null;
+    } catch {
+      return null;
+    }
   });
   const [totalCompletedSteps, setTotalCompletedSteps] = useState(() => {
-    const saved = localStorage.getItem('tinywins-total-completed');
-    return saved ? parseInt(saved, 10) : 0;
+    try {
+      const saved = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-total-completed') : null;
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
   });
   const [unlockedAwards, setUnlockedAwards] = useState<Award[]>([]);
 
@@ -335,7 +347,11 @@ export default function App() {
 
   // Save total completed steps
   useEffect(() => {
-    localStorage.setItem('tinywins-total-completed', totalCompletedSteps.toString());
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('tinywins-total-completed', totalCompletedSteps.toString());
+      }
+    } catch {}
   }, [totalCompletedSteps]);
 
   // Check streak on mount
@@ -351,7 +367,11 @@ export default function App() {
 
   // Save streak
   useEffect(() => {
-    localStorage.setItem('tinywins-streak', streak.toString());
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('tinywins-streak', streak.toString());
+      }
+    } catch {}
   }, [streak]);
 
   const selectedTask: Task | undefined = tasks.find(
@@ -382,6 +402,14 @@ export default function App() {
   };
 
   const handleToggleStep = useCallback((taskId: string, stepId: string) => {
+    const task = tasks.find(t => t.id === taskId);
+    const step = task?.microSteps.find(s => s.id === stepId);
+    
+    // Only increment if not already done
+    if (!step?.done) {
+      setTotalCompletedSteps(prev => prev + 1);
+    }
+    
     toggleStep(taskId, stepId);
     setShowConfetti(true);
     setTimeout(() => setShowConfetti(false), 2000);
@@ -391,9 +419,13 @@ export default function App() {
     if (lastCompletionDate !== today) {
       setStreak(prev => prev + 1);
       setLastCompletionDate(today);
-      localStorage.setItem('tinywins-last-date', today);
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('tinywins-last-date', today);
+        }
+      } catch {}
     }
-  }, [toggleStep, lastCompletionDate]);
+  }, [toggleStep, lastCompletionDate, tasks]);
 
   // Smart suggestions based on time and patterns
   const getSuggestions = () => {
@@ -485,258 +517,380 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <Confetti active={showConfetti} />
-      
-      {/* Header with Stats Toggle */}
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View>
-            <Text style={[styles.title, { color: theme.text }]}>TinyWins</Text>
-            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-              Turn overwhelming tasks into tiny dopamine wins.
-            </Text>
+    <>
+      {/* Splash Screen */}
+      {showSplash ? (
+        <SplashScreen onComplete={() => setShowSplash(false)} />
+      ) : (
+        <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <Confetti active={showConfetti} />
+          
+          {/* Header with Stats Toggle */}
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <View>
+                <Text style={[styles.title, { color: theme.text }]}>TinyWins</Text>
+                <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+                  Turn overwhelming tasks into tiny dopamine wins.
+                </Text>
+              </View>
+              <View style={styles.headerActions}>
+                <TouchableOpacity 
+                  style={[styles.awardsButton, { backgroundColor: theme.card }]}
+                  onPress={() => setShowAwards(true)}
+                >
+                  <Text style={styles.awardsButtonText}>🏆</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.statsButton, { backgroundColor: theme.card }]}
+                  onPress={() => setShowStats(true)}
+                >
+                  <Text style={styles.statsButtonText}>📊</Text>
+                </TouchableOpacity>
+                <Switch
+                  value={isDarkMode}
+                  onValueChange={setIsDarkMode}
+                  trackColor={{ false: '#767577', true: '#3ecf8e' }}
+                  thumbColor={isDarkMode ? '#0d1321' : '#f4f3f4'}
+                />
+              </View>
+            </View>
+            
+            {/* Overall Progress Ring */}
+            <View style={styles.progressSection}>
+              <ProgressRing progress={overallProgress} />
+              <View style={styles.progressLabels}>
+                <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Overall Progress</Text>
+                <Text style={[styles.progressStats, { color: theme.text }]}>
+                  {completedSteps}/{totalSteps} steps completed
+                </Text>
+              </View>
+            </View>
+            
+            {/* Streak Display */}
+            {streak > 0 && (
+              <View style={[styles.streakBadge, { backgroundColor: '#ffd700' }]}>
+                <Text style={styles.streakText}>🔥 {streak} day streak!</Text>
+              </View>
+            )}
+            
+            {/* Recent Awards Preview */}
+            {unlockedAwards.length > 0 && (
+              <View style={styles.recentAwardsContainer}>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Your Awards</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <View style={styles.recentAwardsList}>
+                    {unlockedAwards.slice(-5).map((award) => (
+                      <AwardBadge key={award.id} award={award} size="small" />
+                    ))}
+                  </View>
+                </ScrollView>
+              </View>
+            )}
           </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={[styles.statsButton, { backgroundColor: theme.card }]}
-              onPress={() => setShowStats(true)}
+
+          {/* Smart Suggestions */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.suggestionsContainer}
+            contentContainerStyle={styles.suggestionsContent}
+          >
+            {getSuggestions().map((suggestion, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.suggestionChip, { backgroundColor: theme.card }]}
+                onPress={() => {
+                  setInputValue(suggestion);
+                }}
+              >
+                <Text style={[styles.suggestionText, { color: theme.textSecondary }]}>
+                  💡 {suggestion}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Category Filter */}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={styles.categoriesContainer}
+            contentContainerStyle={styles.categoriesContent}
+          >
+            <TouchableOpacity
+              style={[
+                styles.categoryChip,
+                { backgroundColor: selectedCategory === null ? '#3ecf8e' : theme.card }
+              ]}
+              onPress={() => setSelectedCategory(null)}
             >
-              <Text style={styles.statsButtonText}>📊</Text>
+              <Text style={[
+                styles.categoryChipText,
+                { color: selectedCategory === null ? '#0d1321' : theme.text }
+              ]}>All</Text>
             </TouchableOpacity>
-            <Switch
-              value={isDarkMode}
-              onValueChange={setIsDarkMode}
-              trackColor={{ false: '#767577', true: '#3ecf8e' }}
-              thumbColor={isDarkMode ? '#0d1321' : '#f4f3f4'}
+            {CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                style={[
+                  styles.categoryChip,
+                  { backgroundColor: selectedCategory === cat.id ? cat.color : theme.card }
+                ]}
+                onPress={() => setSelectedCategory(cat.id)}
+              >
+                <Text style={styles.categoryChipIcon}>{cat.icon}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Input Row */}
+          <View style={styles.inputRow}>
+            <TextInput
+              style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
+              placeholder="What feels overwhelming right now?"
+              placeholderTextColor={theme.textSecondary}
+              value={inputValue}
+              onChangeText={setInputValue}
+              onSubmitEditing={handleAddTask}
+              returnKeyType="done"
             />
+            <TouchableOpacity style={styles.addButton} onPress={handleAddTask}>
+              <Text style={styles.addButtonText}>Add</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-        
-        {/* Overall Progress Ring */}
-        <View style={styles.progressSection}>
-          <ProgressRing progress={overallProgress} />
-          <View style={styles.progressLabels}>
-            <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Overall Progress</Text>
-            <Text style={[styles.progressStats, { color: theme.text }]}>
-              {completedSteps}/{totalSteps} steps completed
-            </Text>
-          </View>
-        </View>
-        
-        {/* Streak Display */}
-        {streak > 0 && (
-          <View style={[styles.streakBadge, { backgroundColor: '#ffd700' }]}>
-            <Text style={styles.streakText}>🔥 {streak} day streak!</Text>
-          </View>
-        )}
-      </View>
 
-      {/* Smart Suggestions */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.suggestionsContainer}
-        contentContainerStyle={styles.suggestionsContent}
-      >
-        {getSuggestions().map((suggestion, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.suggestionChip, { backgroundColor: theme.card }]}
-            onPress={() => {
-              setInputValue(suggestion);
-            }}
+          {/* Tasks List */}
+          <FlatList
+            data={tasks.filter(task => {
+              if (!selectedCategory) return true;
+              const taskCategory = getCategoryForTask(task.title);
+              return taskCategory.id === selectedCategory;
+            })}
+            keyExtractor={(item) => item.id}
+            renderItem={renderTask}
+            contentContainerStyle={styles.list}
+            ListEmptyComponent={
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyEmoji}>✨</Text>
+                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+                  No tasks yet. Add one small overwhelming thing above.
+                </Text>
+              </View>
+            }
+          />
+
+          {/* Task Detail Modal */}
+          <Modal
+            visible={!!selectedTask}
+            animationType="slide"
+            transparent
+            onRequestClose={() => selectTask(null)}
           >
-            <Text style={[styles.suggestionText, { color: theme.textSecondary }]}>
-              💡 {suggestion}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalContent, { backgroundColor: theme.modalBg }]}>
+                {selectedTask && (
+                  <>
+                    <View style={styles.modalHeader}>
+                      <Text style={[styles.modalTitle, { color: theme.text }]}>
+                        {selectedTask.title}
+                      </Text>
+                      <TouchableOpacity onPress={() => selectTask(null)}>
+                        <Text style={styles.closeIcon}>✕</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+                      Don't worry about the whole task. Just pick one tiny step.
+                    </Text>
 
-      {/* Category Filter */}
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesContainer}
-        contentContainerStyle={styles.categoriesContent}
-      >
-        <TouchableOpacity
-          style={[
-            styles.categoryChip,
-            { backgroundColor: selectedCategory === null ? '#3ecf8e' : theme.card }
-          ]}
-          onPress={() => setSelectedCategory(null)}
-        >
-          <Text style={[
-            styles.categoryChipText,
-            { color: selectedCategory === null ? '#0d1321' : theme.text }
-          ]}>All</Text>
-        </TouchableOpacity>
-        {CATEGORIES.map((cat) => (
-          <TouchableOpacity
-            key={cat.id}
-            style={[
-              styles.categoryChip,
-              { backgroundColor: selectedCategory === cat.id ? cat.color : theme.card }
-            ]}
-            onPress={() => setSelectedCategory(cat.id)}
+                    <View style={styles.stepsList}>
+                      {selectedTask.microSteps.map(renderMicroStep)}
+                    </View>
+
+                    <TouchableOpacity
+                      style={styles.closeButton}
+                      onPress={() => selectTask(null)}
+                    >
+                      <Text style={styles.closeButtonText}>Done for now</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
+            </View>
+          </Modal>
+
+          {/* Stats Modal */}
+          <Modal
+            visible={showStats}
+            animationType="fade"
+            transparent
+            onRequestClose={() => setShowStats(false)}
           >
-            <Text style={styles.categoryChipIcon}>{cat.icon}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {/* Input Row */}
-      <View style={styles.inputRow}>
-        <TextInput
-          style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
-          placeholder="What feels overwhelming right now?"
-          placeholderTextColor={theme.textSecondary}
-          value={inputValue}
-          onChangeText={setInputValue}
-          onSubmitEditing={handleAddTask}
-          returnKeyType="done"
-        />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddTask}>
-          <Text style={styles.addButtonText}>Add</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Tasks List */}
-      <FlatList
-        data={tasks.filter(task => {
-          if (!selectedCategory) return true;
-          const taskCategory = getCategoryForTask(task.title);
-          return taskCategory.id === selectedCategory;
-        })}
-        keyExtractor={(item) => item.id}
-        renderItem={renderTask}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyEmoji}>✨</Text>
-            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
-              No tasks yet. Add one small overwhelming thing above.
-            </Text>
-          </View>
-        }
-      />
-
-      {/* Task Detail Modal */}
-      <Modal
-        visible={!!selectedTask}
-        animationType="slide"
-        transparent
-        onRequestClose={() => selectTask(null)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { backgroundColor: theme.modalBg }]}>
-            {selectedTask && (
-              <>
-                <View style={styles.modalHeader}>
-                  <Text style={[styles.modalTitle, { color: theme.text }]}>
-                    {selectedTask.title}
-                  </Text>
-                  <TouchableOpacity onPress={() => selectTask(null)}>
+            <View style={styles.modalOverlay}>
+              <View style={[styles.statsModalContent, { backgroundColor: theme.modalBg }]}>
+                <View style={styles.statsHeader}>
+                  <Text style={[styles.statsTitle, { color: theme.text }]}>Your Progress</Text>
+                  <TouchableOpacity onPress={() => setShowStats(false)}>
                     <Text style={styles.closeIcon}>✕</Text>
                   </TouchableOpacity>
                 </View>
-                <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
-                  Don't worry about the whole task. Just pick one tiny step.
-                </Text>
-
-                <View style={styles.stepsList}>
-                  {selectedTask.microSteps.map(renderMicroStep)}
+                
+                <View style={styles.statsGrid}>
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>🎯</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {completedSteps}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Steps Completed
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>📝</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {tasks.length}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Total Tasks
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>🔥</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {streak}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Day Streak
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>💪</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {Math.round(overallProgress)}%
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Overall Progress
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>⭐</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {totalCompletedSteps}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Lifetime Steps
+                    </Text>
+                  </View>
+                  
+                  <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                    <Text style={styles.statIcon}>🏆</Text>
+                    <Text style={[styles.statValue, { color: theme.text }]}>
+                      {unlockedAwards.length}
+                    </Text>
+                    <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                      Awards Earned
+                    </Text>
+                  </View>
                 </View>
-
+                
                 <TouchableOpacity
-                  style={styles.closeButton}
-                  onPress={() => selectTask(null)}
+                  style={styles.closeStatsButton}
+                  onPress={() => setShowStats(false)}
                 >
-                  <Text style={styles.closeButtonText}>Done for now</Text>
+                  <Text style={styles.closeButtonText}>Keep Going!</Text>
                 </TouchableOpacity>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
-
-      {/* Stats Modal */}
-      <Modal
-        visible={showStats}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setShowStats(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.statsModalContent, { backgroundColor: theme.modalBg }]}>
-            <View style={styles.statsHeader}>
-              <Text style={[styles.statsTitle, { color: theme.text }]}>Your Progress</Text>
-              <TouchableOpacity onPress={() => setShowStats(false)}>
-                <Text style={styles.closeIcon}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.statsGrid}>
-              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
-                <Text style={styles.statIcon}>🎯</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>
-                  {completedSteps}
-                </Text>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-                  Steps Completed
-                </Text>
-              </View>
-              
-              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
-                <Text style={styles.statIcon}>📝</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>
-                  {tasks.length}
-                </Text>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-                  Total Tasks
-                </Text>
-              </View>
-              
-              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
-                <Text style={styles.statIcon}>🔥</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>
-                  {streak}
-                </Text>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-                  Day Streak
-                </Text>
-              </View>
-              
-              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
-                <Text style={styles.statIcon}>💪</Text>
-                <Text style={[styles.statValue, { color: theme.text }]}>
-                  {Math.round(overallProgress)}%
-                </Text>
-                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
-                  Overall Progress
-                </Text>
               </View>
             </View>
-            
-            <TouchableOpacity
-              style={styles.closeStatsButton}
-              onPress={() => setShowStats(false)}
-            >
-              <Text style={styles.closeButtonText}>Keep Going!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+          </Modal>
 
-      {rewardMessage && (
-        <Pressable style={styles.rewardBanner} onPress={clearReward}>
-          <Text style={styles.rewardText}>{rewardMessage}</Text>
-        </Pressable>
+          {/* Awards Modal */}
+          <Modal
+            visible={showAwards}
+            animationType="slide"
+            transparent
+            onRequestClose={() => setShowAwards(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={[styles.awardsModalContent, { backgroundColor: theme.modalBg }]}>
+                <View style={styles.awardsHeader}>
+                  <Text style={[styles.awardsTitle, { color: theme.text }]}>Your Awards</Text>
+                  <TouchableOpacity onPress={() => setShowAwards(false)}>
+                    <Text style={styles.closeIcon}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                
+                <Text style={[styles.awardsSubtitle, { color: theme.textSecondary }]}>
+                  Complete tasks and build streaks to unlock awards!
+                </Text>
+                
+                <ScrollView style={styles.awardsScrollView}>
+                  <View style={styles.awardsGrid}>
+                    {AWARDS_LIST.map((award) => {
+                      const isUnlocked = unlockedAwards.find(a => a.id === award.id);
+                      return (
+                        <View key={award.id} style={styles.awardItemContainer}>
+                          <View style={[
+                            styles.awardItem,
+                            { backgroundColor: theme.card },
+                            !isUnlocked && styles.awardLocked
+                          ]}>
+                            <View style={[
+                              styles.awardIconContainer,
+                              { backgroundColor: isUnlocked ? award.color : '#2d3748' }
+                            ]}>
+                              <Text style={styles.awardIconEmoji}>
+                                {isUnlocked ? award.emoji : '🔒'}
+                              </Text>
+                            </View>
+                            <View style={styles.awardInfo}>
+                              <Text style={[
+                                styles.awardItemName,
+                                { color: isUnlocked ? theme.text : theme.textSecondary }
+                              ]}>
+                                {award.name}
+                              </Text>
+                              <Text style={[
+                                styles.awardItemDesc,
+                                { color: theme.textSecondary }
+                              ]}>
+                                {award.description}
+                              </Text>
+                              {!isUnlocked && (
+                                <Text style={styles.awardRequirement}>
+                                  Progress: {award.id.includes('step') ? totalCompletedSteps : streak} / {award.requirement}
+                                </Text>
+                              )}
+                            </View>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                </ScrollView>
+                
+                <TouchableOpacity
+                  style={styles.closeAwardsButton}
+                  onPress={() => setShowAwards(false)}
+                >
+                  <Text style={styles.closeButtonText}>Continue</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          {rewardMessage && (
+            <Pressable style={styles.rewardBanner} onPress={clearReward}>
+              <Text style={styles.rewardText}>{rewardMessage}</Text>
+            </Pressable>
+          )}
+        </SafeAreaView>
       )}
-    </SafeAreaView>
+    </>
   );
 }
 
@@ -1083,6 +1237,193 @@ const styles = StyleSheet.create({
   },
   closeStatsButton: {
     marginTop: 24,
+    backgroundColor: '#3ecf8e',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  // Splash Screen Styles
+  splashContainer: {
+    flex: 1,
+    backgroundColor: '#0d1321',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  splashContent: {
+    alignItems: 'center',
+    paddingHorizontal: 40,
+  },
+  logoContainer: {
+    width: 150,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  splashLogo: {
+    fontSize: 100,
+  },
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  splashTitle: {
+    fontSize: 42,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  splashTagline: {
+    fontSize: 18,
+    color: '#a6b0c3',
+    textAlign: 'center',
+  },
+  featuresPreview: {
+    width: '100%',
+    marginBottom: 40,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  featureEmoji: {
+    fontSize: 28,
+    marginRight: 16,
+  },
+  featureText: {
+    fontSize: 16,
+    color: '#ffffff',
+    flex: 1,
+  },
+  loadingBar: {
+    width: 200,
+    height: 4,
+    backgroundColor: '#1b2436',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  loadingFill: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: '100%',
+    backgroundColor: '#3ecf8e',
+  },
+  // Awards Button
+  awardsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  awardsButtonText: {
+    fontSize: 20,
+  },
+  // Recent Awards
+  recentAwardsContainer: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#1b2436',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingHorizontal: 20,
+  },
+  recentAwardsList: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  // Award Badge
+  awardBadge: {
+    borderRadius: 35,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 6,
+  },
+  awardName: {
+    color: '#0d1321',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  // Awards Modal
+  awardsModalContent: {
+    flex: 1,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    padding: 24,
+    maxHeight: '90%',
+  },
+  awardsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  awardsTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  awardsSubtitle: {
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  awardsScrollView: {
+    flex: 1,
+  },
+  awardsGrid: {
+    gap: 12,
+    paddingBottom: 20,
+  },
+  awardItemContainer: {
+    marginBottom: 4,
+  },
+  awardItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    gap: 16,
+  },
+  awardLocked: {
+    opacity: 0.6,
+  },
+  awardIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  awardIconEmoji: {
+    fontSize: 28,
+  },
+  awardInfo: {
+    flex: 1,
+  },
+  awardItemName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  awardItemDesc: {
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  awardRequirement: {
+    fontSize: 12,
+    color: '#8892a6',
+  },
+  closeAwardsButton: {
+    marginTop: 16,
     backgroundColor: '#3ecf8e',
     borderRadius: 14,
     paddingVertical: 14,
