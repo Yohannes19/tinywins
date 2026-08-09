@@ -1,7 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Text } from './Text';
-import { colors, spacing, borderRadius, typography } from '../../design-system';
+import { colors, spacing, borderRadius, typography, shadows } from '../../design-system';
 
 interface ChipProps {
   label: string;
@@ -26,6 +26,7 @@ export const Chip: React.FC<ChipProps> = ({
     ? {
         backgroundColor: selectedColor || colors.primary,
         borderColor: selectedColor || colors.primary,
+        ...shadows.sm,
       }
     : {};
 
@@ -41,14 +42,14 @@ export const Chip: React.FC<ChipProps> = ({
       onPress={onPress}
       activeOpacity={0.7}
     >
-      {icon && <>{icon}</>}
+      {icon && <View style={{ marginRight: spacing.xs }}>{icon}</View>}
       <Text
         variant="bodySmall"
         style={[
           styles.text,
           selected && styles.selectedText,
           color && !selected && { color },
-          icon && { marginLeft: spacing.xs },
+          icon && { marginLeft: 0 },
         ]}
         numberOfLines={1}
       >
@@ -75,8 +76,10 @@ const styles = StyleSheet.create({
   },
   text: {
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   selectedText: {
     color: '#FFFFFF',
+    fontWeight: '600',
   },
 });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, Dimensions, TouchableOpacity, Modal, Animated } from 'react-native';
+import Svg, { Circle } from 'react-native-svg';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   ScreenContainer, 
@@ -13,7 +14,7 @@ import {
   Chip,
   Input,
 } from '../components/ui';
-import { colors, spacing, typography, shadows, animations } from '../design-system';
+import { colors, spacing, typography, shadows, animations, borderRadius } from '../design-system';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -25,6 +26,8 @@ const ICONS = {
   flame: '🔥',
   award: '🏅',
   close: '✖️',
+  sparkles: '✨',
+  star: '⭐',
 };
 
 interface Task {
@@ -217,92 +220,143 @@ export default function DashboardScreen() {
     <ScreenContainer backgroundColor={colors.background.light}>
       <ContentContainer style={{ flex: 1 }}>
         <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
-          {/* Header */}
+          {/* Header with Gradient Background */}
           <View style={{ 
-            flexDirection: 'row', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: spacing.lg 
+            marginBottom: spacing.xl,
           }}>
-            <View>
-              <Text variant="h1" style={{ color: colors.text.primary }}>
-                TinyWins
-              </Text>
-              <Text variant="body" style={{ color: colors.text.secondary }}>
-                Small steps, big wins
-              </Text>
-            </View>
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity 
-                onPress={() => setShowAwardsModal(true)}
-                style={{
-                  backgroundColor: colors.background.card,
-                  padding: spacing.md,
-                  borderRadius: 16,
-                  ...shadows.sm,
-                }}
-              >
-                <Text variant="h4" style={{ color: colors.award.gold }}>
-                  {ICONS.trophy}
+            <View style={{ 
+              flexDirection: 'row', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+            }}>
+              <View>
+                <Text variant="h1" style={{ 
+                  color: colors.text.primary,
+                  fontWeight: '800',
+                  letterSpacing: -0.5,
+                }}>
+                  Tiny{ICONS.sparkles}Wins
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => setShowAddTaskModal(true)}
-                style={{
-                  backgroundColor: colors.primary,
-                  padding: spacing.md,
-                  borderRadius: 16,
-                  ...shadows.md,
-                  marginLeft: spacing.sm,
-                }}
-              >
-                <Text variant="h4" style={{ color: colors.text.inverse }}>
-                  {ICONS.plus}
+                <Text variant="body" style={{ 
+                  color: colors.text.secondary,
+                  marginTop: spacing.xs,
+                }}>
+                  Small steps, big wins {ICONS.star}
                 </Text>
-              </TouchableOpacity>
+              </View>
+              <View style={{ flexDirection: 'row' }}>
+                <TouchableOpacity 
+                  onPress={() => setShowAwardsModal(true)}
+                  style={{
+                    backgroundColor: colors.background.card,
+                    padding: spacing.md,
+                    borderRadius: borderRadius.full,
+                    ...shadows.md,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                  }}
+                >
+                  <Text variant="h4" style={{ color: colors.award.gold }}>
+                    {ICONS.trophy}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => setShowAddTaskModal(true)}
+                  style={{
+                    backgroundColor: colors.primary,
+                    padding: spacing.md,
+                    borderRadius: borderRadius.full,
+                    ...shadows.primary,
+                    marginLeft: spacing.sm,
+                  }}
+                >
+                  <Text variant="h4" style={{ color: colors.text.inverse }}>
+                    {ICONS.plus}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
-          {/* Progress Ring & Stats */}
-          <Card elevation="md" style={{ 
-            marginBottom: spacing.lg,
-            padding: spacing.lg 
+          {/* Progress Ring & Stats - Enhanced Card */}
+          <Card elevation="lg" style={{ 
+            marginBottom: spacing.xl,
+            padding: spacing.lg,
+            backgroundColor: colors.primary,
+            borderWidth: 0,
           }}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {/* Circular Progress */}
               <View style={{ 
-                width: 80, 
-                height: 80, 
-                borderRadius: 40,
-                borderWidth: 6,
-                borderColor: colors.border,
+                width: 100, 
+                height: 100, 
                 marginRight: spacing.lg,
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-                <Text variant="h3" style={{ color: colors.primary }}>
-                  {Math.round(progressPercentage)}%
-                </Text>
+                <Svg width="100" height="100">
+                  {/* Background Circle */}
+                  <Circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke="rgba(255,255,255,0.2)"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  {/* Progress Circle */}
+                  <Circle
+                    cx="50"
+                    cy="50"
+                    r="42"
+                    stroke="#FFFFFF"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 42}`}
+                    strokeDashoffset={`${2 * Math.PI * 42 * (1 - progressPercentage / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 50 50)"
+                  />
+                </Svg>
+                <View style={{
+                  position: 'absolute',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Text variant="h2" style={{ color: '#FFFFFF', fontWeight: '800' }}>
+                    {Math.round(progressPercentage)}%
+                  </Text>
+                </View>
               </View>
               <View style={{ flex: 1 }}>
-                <Text variant="h4" style={{ color: colors.text.primary, marginBottom: spacing.xs }}>
+                <Text variant="h3" style={{ color: '#FFFFFF', marginBottom: spacing.sm, fontWeight: '600' }}>
                   Today's Progress
                 </Text>
                 <ProgressBar 
                   progress={progressPercentage / 100} 
-                  color={colors.primary}
-                  height={8}
-                  style={{ marginBottom: spacing.sm }}
+                  color="#FFFFFF"
+                  backgroundColor="rgba(255,255,255,0.3)"
+                  height={10}
+                  style={{ marginBottom: spacing.md }}
+                  borderRadius={borderRadius.full}
                 />
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text variant="caption" style={{ color: colors.text.secondary }}>
+                  <Text variant="body" style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
                     {completedSteps}/{totalSteps} steps
                   </Text>
                   {streak > 0 && (
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text variant="caption" style={{ color: colors.accent.coral, marginRight: spacing.xs }}>
+                    <View style={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      paddingHorizontal: spacing.md,
+                      paddingVertical: spacing.xs,
+                      borderRadius: borderRadius.full,
+                    }}>
+                      <Text variant="caption" style={{ color: '#FFFFFF', marginRight: spacing.xs }}>
                         {ICONS.flame}
                       </Text>
-                      <Text variant="caption" style={{ color: colors.accent.coral, fontWeight: '600' }}>
+                      <Text variant="caption" style={{ color: '#FFFFFF', fontWeight: '700' }}>
                         {streak} day streak
                       </Text>
                     </View>
@@ -312,77 +366,112 @@ export default function DashboardScreen() {
             </View>
           </Card>
 
-          {/* Category Filters */}
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={{ marginBottom: spacing.lg }}
-            contentContainerStyle={{ paddingRight: spacing.sm }}
-          >
-            {CATEGORIES.map(category => (
-              <Chip
-                key={category.id}
-                label={`${category.icon || ''} ${category.name}`}
-                selected={selectedCategory === category.id}
-                onPress={() => setSelectedCategory(category.id)}
-                selectedColor={category.color}
-              />
-            ))}
-          </ScrollView>
+          {/* Category Filters - Enhanced */}
+          <View style={{ marginBottom: spacing.lg }}>
+            <Text variant="h4" style={{ color: colors.text.primary, marginBottom: spacing.md, fontWeight: '600' }}>
+              Categories
+            </Text>
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingRight: spacing.sm }}
+            >
+              {CATEGORIES.map(category => (
+                <Chip
+                  key={category.id}
+                  label={`${category.icon || ''} ${category.name}`}
+                  selected={selectedCategory === category.id}
+                  onPress={() => setSelectedCategory(category.id)}
+                  selectedColor={category.color}
+                />
+              ))}
+            </ScrollView>
+          </View>
 
-          {/* Tasks List */}
+          {/* Tasks List - Enhanced Cards */}
           <View style={{ flex: 1 }}>
             {filteredTasks.length === 0 ? (
-              <View style={{ 
+              <Card elevation="md" style={{ 
                 flex: 1, 
                 justifyContent: 'center', 
                 alignItems: 'center',
-                padding: spacing.xl 
+                padding: spacing.xxl,
+                backgroundColor: colors.background.card,
+                minHeight: 300,
               }}>
-                <Text variant="h4" style={{ color: colors.text.secondary, textAlign: 'center' }}>
-                  No tasks yet! 👋
+                <Text variant="h1" style={{ fontSize: 60, marginBottom: spacing.lg }}>
+                  👋
+                </Text>
+                <Text variant="h4" style={{ color: colors.text.primary, textAlign: 'center', fontWeight: '600' }}>
+                  No tasks yet!
                 </Text>
                 <Text variant="body" style={{ color: colors.text.tertiary, textAlign: 'center', marginTop: spacing.sm }}>
                   Tap the + button to add your first tiny win
                 </Text>
-              </View>
+              </Card>
             ) : (
               <ScrollView showsVerticalScrollIndicator={false}>
-                {filteredTasks.map(task => (
+                {filteredTasks.map((task, index) => (
                   <Card 
                     key={task.id} 
                     elevation="sm" 
                     style={{ 
                       marginBottom: spacing.md,
-                      borderLeftWidth: 4,
+                      borderLeftWidth: 5,
                       borderLeftColor: getCategoryColor(task.category),
-                      padding: spacing.md,
-                      backgroundColor: colors.background.card,
+                      padding: spacing.lg,
+                      backgroundColor: task.completed ? colors.categoryLight[task.category as keyof typeof colors.categoryLight] || colors.background.light : colors.background.card,
+                      opacity: task.completed ? 0.7 : 1,
+                      transform: [{ scale: task.completed ? 0.98 : 1 }],
                     }}
                   >
                     <TouchableOpacity 
                       onPress={() => toggleStep(task.id)}
                       style={{ flexDirection: 'row', alignItems: 'center' }}
+                      activeOpacity={0.7}
                     >
-                      {task.completed ? (
-                        <Text variant="h4" style={{ color: colors.success }}>
-                          {ICONS.check}
+                      <View style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 16,
+                        backgroundColor: task.completed ? colors.success : colors.background.light,
+                        borderWidth: 2,
+                        borderColor: task.completed ? colors.success : getCategoryColor(task.category),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        marginRight: spacing.md,
+                      }}>
+                        <Text variant="h4" style={{ color: task.completed ? '#FFFFFF' : getCategoryColor(task.category), fontSize: 18 }}>
+                          {task.completed ? ICONS.check : ''}
                         </Text>
-                      ) : (
-                        <Text variant="h4" style={{ color: colors.text.tertiary }}>
-                          {ICONS.circle}
-                        </Text>
-                      )}
-                      <View style={{ flex: 1, marginLeft: spacing.md }}>
+                      </View>
+                      <View style={{ flex: 1 }}>
                         <Text 
                           variant="body" 
                           style={{ 
                             color: task.completed ? colors.text.tertiary : colors.text.primary,
-                            textDecorationLine: task.completed ? 'line-through' : 'none'
+                            textDecorationLine: task.completed ? 'line-through' : 'none',
+                            fontWeight: task.completed ? '400' : '600',
                           }}
                         >
                           {getCategoryIcon(task.category)} {task.title}
                         </Text>
+                      </View>
+                      <View style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        backgroundColor: task.completed ? colors.success : 'transparent',
+                        borderWidth: 2,
+                        borderColor: task.completed ? colors.success : getCategoryColor(task.category),
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                        {task.completed && (
+                          <Text variant="caption" style={{ color: '#FFFFFF', fontWeight: '700' }}>
+                            ✓
+                          </Text>
+                        )}
                       </View>
                     </TouchableOpacity>
                   </Card>
