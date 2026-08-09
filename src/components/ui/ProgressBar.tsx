@@ -7,8 +7,10 @@ interface ProgressBarProps {
   size?: 'small' | 'medium' | 'large';
   color?: string;
   height?: number;
+  backgroundColor?: string;
   style?: any;
   showLabel?: boolean;
+  borderRadius?: number;
 }
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -16,22 +18,34 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   size = 'medium',
   color,
   height,
+  backgroundColor,
   style,
   showLabel = false,
+  borderRadius: customBorderRadius,
 }) => {
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
   
   return (
     <View style={[styles.container, style]}>
-      <View style={[styles.track, styles[size]]}>
+      <View 
+        style={[
+          styles.track, 
+          styles[size],
+          height ? { height } : undefined,
+          { backgroundColor: backgroundColor || colors.border },
+          customBorderRadius ? { borderRadius: customBorderRadius } : undefined,
+        ]}
+      >
         <View
           style={[
             styles.fill,
             styles[size],
+            height ? { height } : undefined,
             { 
               width: `${clampedProgress * 100}%`,
               backgroundColor: color || colors.primary,
             },
+            customBorderRadius ? { borderRadius: customBorderRadius } : undefined,
           ]}
         />
       </View>
@@ -49,7 +63,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   track: {
-    backgroundColor: colors.border,
     borderRadius: borderRadius.full,
     overflow: 'hidden',
   },

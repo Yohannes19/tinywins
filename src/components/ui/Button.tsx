@@ -72,7 +72,6 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: colors.primary,
-    shadowColor: colors.primary,
     ...shadows.md,
   },
   secondary: {

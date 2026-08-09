@@ -30,6 +30,7 @@ export const Input: React.FC<InputProps> = ({
   keyboardType = 'default',
   autoCapitalize = 'sentences',
   editable = true,
+  style,
 }) => {
   return (
     <View style={styles.container}>
