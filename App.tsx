@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,11 +9,299 @@ import {
   Modal,
   StyleSheet,
   Pressable,
+  Animated,
+  ScrollView,
+  Switch,
+  StatusBar,
+  Dimensions,
+  Image,
 } from 'react-native';
 import { useAppStore, Task, MicroStep } from './store/appStore';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Splash Screen Component
+const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
+  const [animationPhase, setAnimationPhase] = useState(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.5)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Initial fade in
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Rotation animation
+    Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      })
+    ).start();
+
+    // Phase transitions
+    const timers = [
+      setTimeout(() => setAnimationPhase(1), 1500),
+      setTimeout(() => setAnimationPhase(2), 2500),
+      setTimeout(() => {
+        // Fade out and complete
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 500,
+          useNativeDriver: true,
+        }).start(onComplete);
+      }, 4000),
+    ];
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const spin = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <View style={styles.splashContainer}>
+      <Animated.View style={[styles.splashContent, { opacity: fadeAnim }]}>
+        <Animated.View style={[styles.logoContainer, { transform: [{ scale: scaleAnim }] }]}>
+          <Animated.Text style={[styles.splashLogo, { transform: [{ rotate: spin }] }]}>🎯</Animated.Text>
+        </Animated.View>
+        
+        {animationPhase >= 1 && (
+          <Animated.View style={styles.titleContainer}>
+            <Text style={styles.splashTitle}>TinyWins</Text>
+            <Text style={styles.splashTagline}>Small Steps, Big Wins</Text>
+          </Animated.View>
+        )}
+        
+        {animationPhase >= 2 && (
+          <View style={styles.featuresPreview}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureEmoji}>✨</Text>
+              <Text style={styles.featureText}>Break tasks into tiny steps</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureEmoji}>🏆</Text>
+              <Text style={styles.featureText}>Earn awards & badges</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureEmoji}>🔥</Text>
+              <Text style={styles.featureText}>Build your streak</Text>
+            </View>
+          </View>
+        )}
+
+        <View style={styles.loadingBar}>
+          <Animated.View style={[styles.loadingFill, { opacity: fadeAnim }]} />
+        </View>
+      </Animated.View>
+    </View>
+  );
+};
+
+// Award Badge Component
+const AwardBadge = ({ award, size = 'medium' }: { award: Award; size?: 'small' | 'medium' | 'large' }) => {
+  const sizeStyles = {
+    small: { container: 50, emoji: 24, text: 10 },
+    medium: { container: 70, emoji: 32, text: 12 },
+    large: { container: 100, emoji: 48, text: 14 },
+  };
+
+  const dims = sizeStyles[size];
+
+  return (
+    <View style={[styles.awardBadge, { width: dims.container, height: dims.container, backgroundColor: award.color }]}>
+      <Text style={{ fontSize: dims.emoji }}>{award.emoji}</Text>
+      <Text style={[styles.awardName, { fontSize: dims.text }]} numberOfLines={2}>{award.name}</Text>
+    </View>
+  );
+};
+
+// Awards System
+interface Award {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+  description: string;
+  requirement: number;
+  unlocked: boolean;
+}
+
+const AWARDS_LIST: Award[] = [
+  { id: 'first_step', name: 'First Step', emoji: '🌱', color: '#4ecdc4', description: 'Complete your first micro-step', requirement: 1, unlocked: false },
+  { id: 'quick_starter', name: 'Quick Starter', emoji: '⚡', color: '#ffd700', description: 'Complete 10 micro-steps', requirement: 10, unlocked: false },
+  { id: 'task_master', name: 'Task Master', emoji: '🎯', color: '#ff6b6b', description: 'Complete 50 micro-steps', requirement: 50, unlocked: false },
+  { id: 'productivity_pro', name: 'Productivity Pro', emoji: '🚀', color: '#a8e6cf', description: 'Complete 100 micro-steps', requirement: 100, unlocked: false },
+  { id: 'unstoppable', name: 'Unstoppable', emoji: '💪', color: '#fd79a8', description: 'Complete 250 micro-steps', requirement: 250, unlocked: false },
+  { id: 'legend', name: 'Legend', emoji: '👑', color: '#ffeaa7', description: 'Complete 500 micro-steps', requirement: 500, unlocked: false },
+  { id: 'week_warrior', name: 'Week Warrior', emoji: '📅', color: '#74b9ff', description: '7 day streak', requirement: 7, unlocked: false },
+  { id: 'month_champion', name: 'Month Champion', emoji: '🏆', color: '#dfe6e9', description: '30 day streak', requirement: 30, unlocked: false },
+];
+
+// Confetti particles component
+const Confetti = ({ active }: { active: boolean }) => {
+  const [particles] = useState(() =>
+    Array.from({ length: 50 }, () => ({
+      x: Math.random() * 100,
+      y: -20 - Math.random() * 50,
+      color: ['#3ecf8e', '#ffd700', '#ff6b6b', '#4ecdc4', '#a8e6cf', '#fd79a8', '#74b9ff'][
+        Math.floor(Math.random() * 7)
+      ],
+      size: 6 + Math.random() * 14,
+      rotation: Math.random() * 360,
+      speed: 2 + Math.random() * 4,
+      wobble: Math.random() * 20 - 10,
+    }))
+  );
+
+  const animatedValues = particles.map(() => new Animated.Value(0));
+
+  useEffect(() => {
+    if (active) {
+      const animations = animatedValues.map((anim, i) =>
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 2000 + i * 50,
+          useNativeDriver: true,
+        })
+      );
+      Animated.stagger(30, animations).start();
+    } else {
+      animatedValues.forEach((anim) => anim.setValue(0));
+    }
+  }, [active]);
+
+  if (!active) return null;
+
+  return (
+    <View style={styles.confettiContainer}>
+      {particles.map((particle, i) => (
+        <Animated.View
+          key={i}
+          style={[
+            styles.confettiParticle,
+            {
+              backgroundColor: particle.color,
+              width: particle.size,
+              height: particle.size,
+              left: `${particle.x}%`,
+              borderRadius: particle.size / 2,
+              transform: [
+                {
+                  translateY: animatedValues[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [particle.y, SCREEN_HEIGHT + 50],
+                  }),
+                },
+                {
+                  translateX: animatedValues[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, particle.wobble],
+                  }),
+                },
+                {
+                  rotate: animatedValues[i].interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [`${particle.rotation}deg`, `${particle.rotation + 1080}deg`],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
+      ))}
+    </View>
+  );
+};
+
+// Progress Ring Component using react-native-svg alternative
+const ProgressRing = ({ progress, size = 120, strokeWidth = 8 }: { progress: number; size?: number; strokeWidth?: number }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <View style={[styles.progressRingContainer, { width: size, height: size }]}>
+      {/* Background circle */}
+      <View style={[
+        styles.progressRingBg,
+        { 
+          width: size, 
+          height: size, 
+          borderRadius: size / 2,
+          borderWidth: strokeWidth,
+          borderColor: '#1b2436',
+        }
+      ]} />
+      {/* Progress circle using border trick */}
+      <View style={[
+        styles.progressRingFill,
+        { 
+          position: 'absolute',
+          width: size, 
+          height: size, 
+          borderRadius: size / 2,
+          borderWidth: strokeWidth,
+          borderColor: '#3ecf8e',
+          borderLeftColor: progress > 25 ? '#3ecf8e' : 'transparent',
+          borderTopColor: progress > 50 ? '#3ecf8e' : 'transparent',
+          borderRightColor: progress > 75 ? '#3ecf8e' : 'transparent',
+          borderBottomColor: progress > 0 ? '#3ecf8e' : 'transparent',
+          transform: [{ rotate: `${-90 + (progress / 100) * 360}deg` }],
+        }
+      ]} />
+      <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+    </View>
+  );
+};
+
+// Category definitions
+const CATEGORIES = [
+  { id: 'clean', name: 'Clean', icon: '🧹', color: '#4ecdc4' },
+  { id: 'email', name: 'Email', icon: '📧', color: '#ffd700' },
+  { id: 'tax', name: 'Tax', icon: '📄', color: '#ff6b6b' },
+  { id: 'laundry', name: 'Laundry', icon: '👕', color: '#a8e6cf' },
+  { id: 'dishes', name: 'Dishes', icon: '🍽️', color: '#ffeaa7' },
+  { id: 'shower', name: 'Shower', icon: '🚿', color: '#74b9ff' },
+  { id: 'call', name: 'Call', icon: '📞', color: '#fd79a8' },
+  { id: 'other', name: 'Other', icon: '✨', color: '#dfe6e9' },
+];
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [inputValue, setInputValue] = useState('');
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const [showAwards, setShowAwards] = useState(false);
+  const [streak, setStreak] = useState(() => {
+    const saved = localStorage.getItem('tinywins-streak');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [lastCompletionDate, setLastCompletionDate] = useState(() => {
+    return localStorage.getItem('tinywins-last-date') || null;
+  });
+  const [totalCompletedSteps, setTotalCompletedSteps] = useState(() => {
+    const saved = localStorage.getItem('tinywins-total-completed');
+    return saved ? parseInt(saved, 10) : 0;
+  });
+  const [unlockedAwards, setUnlockedAwards] = useState<Award[]>([]);
 
   const tasks = useAppStore((state) => state.tasks);
   const selectedTaskId = useAppStore((state) => state.selectedTaskId);
@@ -23,9 +311,69 @@ export default function App() {
   const toggleStep = useAppStore((state) => state.toggleStep);
   const clearReward = useAppStore((state) => state.clearReward);
 
+  // Check and unlock awards
+  useEffect(() => {
+    const newAwards = AWARDS_LIST.filter(award => {
+      if (award.id.includes('step') || award.id === 'first_step' || award.id === 'quick_starter' || 
+          award.id === 'task_master' || award.id === 'productivity_pro' || award.id === 'unstoppable' || award.id === 'legend') {
+        return totalCompletedSteps >= award.requirement;
+      } else if (award.id.includes('warrior') || award.id.includes('champion')) {
+        return streak >= award.requirement;
+      }
+      return false;
+    });
+    
+    // Find newly unlocked awards
+    const newlyUnlocked = newAwards.filter(a => !unlockedAwards.find(u => u.id === a.id));
+    if (newlyUnlocked.length > 0) {
+      setUnlockedAwards([...unlockedAwards, ...newlyUnlocked]);
+      // Show celebration for new awards
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+  }, [totalCompletedSteps, streak]);
+
+  // Save total completed steps
+  useEffect(() => {
+    localStorage.setItem('tinywins-total-completed', totalCompletedSteps.toString());
+  }, [totalCompletedSteps]);
+
+  // Check streak on mount
+  useEffect(() => {
+    const today = new Date().toDateString();
+    if (lastCompletionDate !== today) {
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      if (lastCompletionDate !== yesterday) {
+        setStreak(0);
+      }
+    }
+  }, []);
+
+  // Save streak
+  useEffect(() => {
+    localStorage.setItem('tinywins-streak', streak.toString());
+  }, [streak]);
+
   const selectedTask: Task | undefined = tasks.find(
     (task) => task.id === selectedTaskId
   );
+
+  // Calculate overall progress
+  const totalSteps = tasks.reduce((sum, task) => sum + task.microSteps.length, 0);
+  const completedSteps = tasks.reduce(
+    (sum, task) => sum + task.microSteps.filter((s) => s.done).length,
+    0
+  );
+  const overallProgress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+
+  // Get category for a task
+  const getCategoryForTask = (title: string) => {
+    const lower = title.toLowerCase();
+    for (const cat of CATEGORIES) {
+      if (lower.includes(cat.id)) return cat;
+    }
+    return CATEGORIES.find(c => c.id === 'other')!;
+  };
 
   const handleAddTask = () => {
     if (!inputValue.trim()) return;
@@ -33,56 +381,219 @@ export default function App() {
     setInputValue('');
   };
 
+  const handleToggleStep = useCallback((taskId: string, stepId: string) => {
+    toggleStep(taskId, stepId);
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 2000);
+    
+    // Update streak
+    const today = new Date().toDateString();
+    if (lastCompletionDate !== today) {
+      setStreak(prev => prev + 1);
+      setLastCompletionDate(today);
+      localStorage.setItem('tinywins-last-date', today);
+    }
+  }, [toggleStep, lastCompletionDate]);
+
+  // Smart suggestions based on time and patterns
+  const getSuggestions = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      return ['Morning routine', 'Check emails', 'Plan your day'];
+    } else if (hour < 18) {
+      return ['Clean workspace', 'Make that call', 'Review tasks'];
+    } else {
+      return ['Prepare for tomorrow', 'Quick tidy up', 'Self-care routine'];
+    }
+  };
+
   const renderTask = ({ item }: { item: Task }) => {
     const doneCount = item.microSteps.filter((step) => step.done).length;
     const totalCount = item.microSteps.length;
+    const progress = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+    const category = getCategoryForTask(item.title);
 
     return (
       <TouchableOpacity
-        style={styles.taskCard}
+        style={[styles.taskCard, { borderLeftColor: category.color }]}
         onPress={() => selectTask(item.id)}
         activeOpacity={0.7}
       >
-        <Text style={styles.taskTitle}>{item.title}</Text>
-        <Text style={styles.taskProgress}>
-          {doneCount}/{totalCount} tiny steps done
-        </Text>
+        <View style={styles.taskHeader}>
+          <Text style={styles.taskCategoryIcon}>{category.icon}</Text>
+          <View style={styles.taskInfo}>
+            <Text style={styles.taskTitle}>{item.title}</Text>
+            <Text style={styles.taskProgress}>
+              {doneCount}/{totalCount} tiny steps done
+            </Text>
+          </View>
+        </View>
+        <View style={styles.progressBar}>
+          <View 
+            style={[
+              styles.progressFill, 
+              { 
+                width: `${progress}%`,
+                backgroundColor: category.color 
+              }
+            ]} 
+          />
+        </View>
       </TouchableOpacity>
     );
   };
 
-  const renderMicroStep = (step: MicroStep) => (
+  const renderMicroStep = (step: MicroStep, index: number) => (
     <TouchableOpacity
       key={step.id}
-      style={styles.stepRow}
+      style={[
+        styles.stepRow,
+        step.done && styles.stepRowDone,
+        { animationDelay: `${index * 50}ms` }
+      ]}
       onPress={() => {
         if (selectedTask) {
-          toggleStep(selectedTask.id, step.id);
+          handleToggleStep(selectedTask.id, step.id);
         }
       }}
       activeOpacity={0.7}
     >
-      <Text style={styles.stepCheckbox}>{step.done ? '✅' : '⬜'}</Text>
+      <Animated.View style={[
+        styles.stepCheckbox,
+        step.done && styles.stepCheckboxDone
+      ]}>
+        <Text>{step.done ? '✅' : '⬜'}</Text>
+      </Animated.View>
       <Text style={[styles.stepText, step.done && styles.stepTextDone]}>
         {step.text}
       </Text>
     </TouchableOpacity>
   );
 
+  const theme = isDarkMode ? {
+    background: '#0d1321',
+    card: '#1b2436',
+    text: '#ffffff',
+    textSecondary: '#a6b0c3',
+    modalBg: '#141b2c',
+  } : {
+    background: '#f5f6fa',
+    card: '#ffffff',
+    text: '#2d3436',
+    textSecondary: '#636e72',
+    modalBg: '#ffffff',
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <Confetti active={showConfetti} />
+      
+      {/* Header with Stats Toggle */}
       <View style={styles.header}>
-        <Text style={styles.title}>TinyWins</Text>
-        <Text style={styles.subtitle}>
-          Turn overwhelming tasks into tiny dopamine wins.
-        </Text>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={[styles.title, { color: theme.text }]}>TinyWins</Text>
+            <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
+              Turn overwhelming tasks into tiny dopamine wins.
+            </Text>
+          </View>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={[styles.statsButton, { backgroundColor: theme.card }]}
+              onPress={() => setShowStats(true)}
+            >
+              <Text style={styles.statsButtonText}>📊</Text>
+            </TouchableOpacity>
+            <Switch
+              value={isDarkMode}
+              onValueChange={setIsDarkMode}
+              trackColor={{ false: '#767577', true: '#3ecf8e' }}
+              thumbColor={isDarkMode ? '#0d1321' : '#f4f3f4'}
+            />
+          </View>
+        </View>
+        
+        {/* Overall Progress Ring */}
+        <View style={styles.progressSection}>
+          <ProgressRing progress={overallProgress} />
+          <View style={styles.progressLabels}>
+            <Text style={[styles.progressLabel, { color: theme.textSecondary }]}>Overall Progress</Text>
+            <Text style={[styles.progressStats, { color: theme.text }]}>
+              {completedSteps}/{totalSteps} steps completed
+            </Text>
+          </View>
+        </View>
+        
+        {/* Streak Display */}
+        {streak > 0 && (
+          <View style={[styles.streakBadge, { backgroundColor: '#ffd700' }]}>
+            <Text style={styles.streakText}>🔥 {streak} day streak!</Text>
+          </View>
+        )}
       </View>
 
+      {/* Smart Suggestions */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.suggestionsContainer}
+        contentContainerStyle={styles.suggestionsContent}
+      >
+        {getSuggestions().map((suggestion, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.suggestionChip, { backgroundColor: theme.card }]}
+            onPress={() => {
+              setInputValue(suggestion);
+            }}
+          >
+            <Text style={[styles.suggestionText, { color: theme.textSecondary }]}>
+              💡 {suggestion}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Category Filter */}
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        style={styles.categoriesContainer}
+        contentContainerStyle={styles.categoriesContent}
+      >
+        <TouchableOpacity
+          style={[
+            styles.categoryChip,
+            { backgroundColor: selectedCategory === null ? '#3ecf8e' : theme.card }
+          ]}
+          onPress={() => setSelectedCategory(null)}
+        >
+          <Text style={[
+            styles.categoryChipText,
+            { color: selectedCategory === null ? '#0d1321' : theme.text }
+          ]}>All</Text>
+        </TouchableOpacity>
+        {CATEGORIES.map((cat) => (
+          <TouchableOpacity
+            key={cat.id}
+            style={[
+              styles.categoryChip,
+              { backgroundColor: selectedCategory === cat.id ? cat.color : theme.card }
+            ]}
+            onPress={() => setSelectedCategory(cat.id)}
+          >
+            <Text style={styles.categoryChipIcon}>{cat.icon}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Input Row */}
       <View style={styles.inputRow}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: theme.card, color: theme.text }]}
           placeholder="What feels overwhelming right now?"
-          placeholderTextColor="#8892a6"
+          placeholderTextColor={theme.textSecondary}
           value={inputValue}
           onChangeText={setInputValue}
           onSubmitEditing={handleAddTask}
@@ -93,18 +604,27 @@ export default function App() {
         </TouchableOpacity>
       </View>
 
+      {/* Tasks List */}
       <FlatList
-        data={tasks}
+        data={tasks.filter(task => {
+          if (!selectedCategory) return true;
+          const taskCategory = getCategoryForTask(task.title);
+          return taskCategory.id === selectedCategory;
+        })}
         keyExtractor={(item) => item.id}
         renderItem={renderTask}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.emptyText}>
-            No tasks yet. Add one small overwhelming thing above.
-          </Text>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyEmoji}>✨</Text>
+            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
+              No tasks yet. Add one small overwhelming thing above.
+            </Text>
+          </View>
         }
       />
 
+      {/* Task Detail Modal */}
       <Modal
         visible={!!selectedTask}
         animationType="slide"
@@ -112,25 +632,100 @@ export default function App() {
         onRequestClose={() => selectTask(null)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: theme.modalBg }]}>
             {selectedTask && (
               <>
-                <Text style={styles.modalTitle}>{selectedTask.title}</Text>
-                <Text style={styles.modalSubtitle}>
-                  Do not worry about the whole task. Just pick one tiny step.
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, { color: theme.text }]}>
+                    {selectedTask.title}
+                  </Text>
+                  <TouchableOpacity onPress={() => selectTask(null)}>
+                    <Text style={styles.closeIcon}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+                  Don't worry about the whole task. Just pick one tiny step.
                 </Text>
 
                 <View style={styles.stepsList}>
                   {selectedTask.microSteps.map(renderMicroStep)}
                 </View>
+
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => selectTask(null)}
+                >
+                  <Text style={styles.closeButtonText}>Done for now</Text>
+                </TouchableOpacity>
               </>
             )}
+          </View>
+        </View>
+      </Modal>
 
+      {/* Stats Modal */}
+      <Modal
+        visible={showStats}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowStats(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.statsModalContent, { backgroundColor: theme.modalBg }]}>
+            <View style={styles.statsHeader}>
+              <Text style={[styles.statsTitle, { color: theme.text }]}>Your Progress</Text>
+              <TouchableOpacity onPress={() => setShowStats(false)}>
+                <Text style={styles.closeIcon}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.statsGrid}>
+              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                <Text style={styles.statIcon}>🎯</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>
+                  {completedSteps}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                  Steps Completed
+                </Text>
+              </View>
+              
+              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                <Text style={styles.statIcon}>📝</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>
+                  {tasks.length}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                  Total Tasks
+                </Text>
+              </View>
+              
+              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                <Text style={styles.statIcon}>🔥</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>
+                  {streak}
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                  Day Streak
+                </Text>
+              </View>
+              
+              <View style={[styles.statCard, { backgroundColor: theme.card }]}>
+                <Text style={styles.statIcon}>💪</Text>
+                <Text style={[styles.statValue, { color: theme.text }]}>
+                  {Math.round(overallProgress)}%
+                </Text>
+                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>
+                  Overall Progress
+                </Text>
+              </View>
+            </View>
+            
             <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => selectTask(null)}
+              style={styles.closeStatsButton}
+              onPress={() => setShowStats(false)}
             >
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>Keep Going!</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -148,22 +743,120 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0d1321',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
   },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  statsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  statsButtonText: {
+    fontSize: 20,
+  },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#ffffff',
   },
   subtitle: {
     fontSize: 14,
-    color: '#a6b0c3',
     marginTop: 4,
+  },
+  progressSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    gap: 20,
+  },
+  progressRingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  progressText: {
+    position: 'absolute',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  progressLabels: {
+    justifyContent: 'center',
+  },
+  progressLabel: {
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  progressStats: {
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  streakBadge: {
+    alignSelf: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 8,
+  },
+  streakText: {
+    color: '#0d1321',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  suggestionsContainer: {
+    maxHeight: 50,
+    marginBottom: 8,
+  },
+  suggestionsContent: {
+    paddingHorizontal: 20,
+    gap: 10,
+  },
+  suggestionChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+  },
+  suggestionText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  categoriesContainer: {
+    maxHeight: 50,
+    marginBottom: 8,
+  },
+  categoriesContent: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  categoryChip: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  categoryChipIcon: {
+    fontSize: 20,
   },
   inputRow: {
     flexDirection: 'row',
@@ -173,8 +866,6 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: '#1b2436',
-    color: '#ffffff',
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -196,10 +887,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
+  emptyState: {
+    alignItems: 'center',
+    marginTop: 60,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    marginBottom: 12,
+  },
   emptyText: {
-    color: '#6b7690',
     textAlign: 'center',
-    marginTop: 40,
     fontSize: 14,
   },
   taskCard: {
@@ -207,6 +904,18 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 12,
+    borderLeftWidth: 4,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  taskCategoryIcon: {
+    fontSize: 24,
+  },
+  taskInfo: {
+    flex: 1,
   },
   taskTitle: {
     color: '#ffffff',
@@ -218,25 +927,46 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 6,
   },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#2d3748',
+    borderRadius: 2,
+    marginTop: 12,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: '#141b2c',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     paddingBottom: 36,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  closeIcon: {
+    fontSize: 24,
+    color: '#8892a6',
+    padding: 8,
   },
   modalTitle: {
-    color: '#ffffff',
     fontSize: 22,
     fontWeight: '700',
+    flex: 1,
   },
   modalSubtitle: {
-    color: '#a6b0c3',
     fontSize: 14,
     marginTop: 6,
     marginBottom: 20,
@@ -252,9 +982,15 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 16,
   },
+  stepRowDone: {
+    opacity: 0.6,
+  },
   stepCheckbox: {
     fontSize: 18,
     marginRight: 12,
+  },
+  stepCheckboxDone: {
+    transform: [{ scale: 1.1 }],
   },
   stepText: {
     color: '#ffffff',
@@ -291,5 +1027,65 @@ const styles = StyleSheet.create({
     color: '#0d1321',
     fontWeight: '700',
     fontSize: 15,
+  },
+  confettiContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    pointerEvents: 'none',
+    zIndex: 1000,
+  },
+  confettiParticle: {
+    position: 'absolute',
+  },
+  statsModalContent: {
+    margin: 40,
+    borderRadius: 24,
+    padding: 24,
+    maxHeight: '70%',
+  },
+  statsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  statsTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  statCard: {
+    width: '45%',
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  statIcon: {
+    fontSize: 32,
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  closeStatsButton: {
+    marginTop: 24,
+    backgroundColor: '#3ecf8e',
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
   },
 });
