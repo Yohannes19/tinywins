@@ -15,10 +15,28 @@ import {
   StatusBar,
   Dimensions,
   Image,
+  Platform,
 } from 'react-native';
 import { useAppStore, Task, MicroStep } from './store/appStore';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+// Storage helpers for cross-platform persistence
+const storage = {
+  getItem: async (key: string): Promise<string | null> => {
+    try {
+      return await AsyncStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem: async (key: string, value: string): Promise<void> => {
+    try {
+      await AsyncStorage.setItem(key, value);
+    } catch {}
+  },
+};
 
 // Splash Screen Component
 const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
@@ -290,30 +308,25 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showStats, setShowStats] = useState(false);
   const [showAwards, setShowAwards] = useState(false);
-  const [streak, setStreak] = useState(() => {
-    try {
-      const saved = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-streak') : null;
-      return saved ? parseInt(saved, 10) : 0;
-    } catch {
-      return 0;
-    }
-  });
-  const [lastCompletionDate, setLastCompletionDate] = useState(() => {
-    try {
-      return typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-last-date') : null;
-    } catch {
-      return null;
-    }
-  });
-  const [totalCompletedSteps, setTotalCompletedSteps] = useState(() => {
-    try {
-      const saved = typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('tinywins-total-completed') : null;
-      return saved ? parseInt(saved, 10) : 0;
-    } catch {
-      return 0;
-    }
-  });
+  const [streak, setStreak] = useState(0);
+  const [lastCompletionDate, setLastCompletionDate] = useState<string | null>(null);
+  const [totalCompletedSteps, setTotalCompletedSteps] = useState(0);
   const [unlockedAwards, setUnlockedAwards] = useState<Award[]>([]);
+
+  // Load persisted data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      const [streakData, lastDateData, totalStepsData] = await Promise.all([
+        storage.getItem('tinywins-streak'),
+        storage.getItem('tinywins-last-date'),
+        storage.getItem('tinywins-total-completed'),
+      ]);
+      if (streakData) setStreak(parseInt(streakData, 10));
+      if (lastDateData) setLastCompletionDate(lastDateData);
+      if (totalStepsData) setTotalCompletedSteps(parseInt(totalStepsData, 10));
+    };
+    loadData();
+  }, []);
 
   const tasks = useAppStore((state) => state.tasks);
   const selectedTaskId = useAppStore((state) => state.selectedTaskId);
@@ -347,11 +360,7 @@ export default function App() {
 
   // Save total completed steps
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('tinywins-total-completed', totalCompletedSteps.toString());
-      }
-    } catch {}
+    storage.setItem('tinywins-total-completed', totalCompletedSteps.toString());
   }, [totalCompletedSteps]);
 
   // Check streak on mount
@@ -367,11 +376,7 @@ export default function App() {
 
   // Save streak
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        window.localStorage.setItem('tinywins-streak', streak.toString());
-      }
-    } catch {}
+    storage.setItem('tinywins-streak', streak.toString());
   }, [streak]);
 
   const selectedTask: Task | undefined = tasks.find(
@@ -419,11 +424,7 @@ export default function App() {
     if (lastCompletionDate !== today) {
       setStreak(prev => prev + 1);
       setLastCompletionDate(today);
-      try {
-        if (typeof window !== 'undefined' && window.localStorage) {
-          window.localStorage.setItem('tinywins-last-date', today);
-        }
-      } catch {}
+      storage.setItem('tinywins-last-date', today);
     }
   }, [toggleStep, lastCompletionDate, tasks]);
 
