@@ -220,7 +220,7 @@ export default function DashboardScreen() {
     <ScreenContainer backgroundColor={colors.background.light}>
       <ContentContainer style={{ flex: 1 }}>
         <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
-          {/* Header with Gradient Background */}
+          {/* Header with Mastercard-inspired Design */}
           <View style={{ 
             marginBottom: spacing.xl,
           }}>
@@ -230,25 +230,49 @@ export default function DashboardScreen() {
               alignItems: 'center',
             }}>
               <View>
-                <Text variant="h1" style={{ 
-                  color: colors.text.primary,
-                  fontWeight: '800',
-                  letterSpacing: -0.5,
-                }}>
-                  Tiny{ICONS.sparkles}Wins
-                </Text>
+                {/* Mastercard-style overlapping circles logo */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: spacing.sm }}>
+                  <View style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: colors.primary,
+                    position: 'absolute',
+                    left: 0,
+                    opacity: 0.9,
+                  }} />
+                  <View style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: colors.secondary,
+                    position: 'absolute',
+                    left: 20,
+                    opacity: 0.9,
+                  }} />
+                  <View style={{ marginLeft: 45 }}>
+                    <Text variant="h1" style={{ 
+                      color: colors.text.primary,
+                      fontWeight: '700',
+                      letterSpacing: -0.8,
+                    }}>
+                      TinyWins
+                    </Text>
+                  </View>
+                </View>
                 <Text variant="body" style={{ 
                   color: colors.text.secondary,
                   marginTop: spacing.xs,
+                  letterSpacing: 0.3,
                 }}>
-                  Small steps, big wins {ICONS.star}
+                  Small steps, big wins
                 </Text>
               </View>
               <View style={{ flexDirection: 'row' }}>
                 <TouchableOpacity 
                   onPress={() => setShowAwardsModal(true)}
                   style={{
-                    backgroundColor: colors.background.card,
+                    backgroundColor: colors.surface,
                     padding: spacing.md,
                     borderRadius: borderRadius.full,
                     ...shadows.md,
@@ -278,13 +302,34 @@ export default function DashboardScreen() {
             </View>
           </View>
 
-          {/* Progress Ring & Stats - Enhanced Card */}
+          {/* Progress Ring & Stats - Enhanced Card with Green Gradient */}
           <Card elevation="lg" style={{ 
             marginBottom: spacing.xl,
             padding: spacing.lg,
             backgroundColor: colors.primary,
             borderWidth: 0,
+            overflow: 'hidden',
           }}>
+            {/* Decorative circles in background */}
+            <View style={{
+              position: 'absolute',
+              right: -30,
+              top: -30,
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              backgroundColor: 'rgba(255,255,255,0.1)',
+            }} />
+            <View style={{
+              position: 'absolute',
+              right: 40,
+              top: -20,
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: 'rgba(235,104,65,0.2)',
+            }} />
+            
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               {/* Circular Progress */}
               <View style={{ 
@@ -323,7 +368,7 @@ export default function DashboardScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}>
-                  <Text variant="h2" style={{ color: '#FFFFFF', fontWeight: '800' }}>
+                  <Text variant="h2" style={{ color: '#FFFFFF', fontWeight: '700' }}>
                     {Math.round(progressPercentage)}%
                   </Text>
                 </View>
@@ -341,7 +386,7 @@ export default function DashboardScreen() {
                   borderRadius={borderRadius.full}
                 />
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text variant="body" style={{ color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
+                  <Text variant="body" style={{ color: 'rgba(255,255,255,0.95)', fontWeight: '500' }}>
                     {completedSteps}/{totalSteps} steps
                   </Text>
                   {streak > 0 && (
