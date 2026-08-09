@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Text } from './Text';
-import { colors, spacing, typography, borderRadius, shadows } from '../design-system';
+import { colors, spacing, typography, borderRadius, shadows } from '../../design-system';
 
 interface ButtonProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';

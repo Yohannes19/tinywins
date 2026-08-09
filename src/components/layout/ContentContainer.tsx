@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { spacing } from '../design-system';
+import { spacing } from '../../design-system';
 
 interface ContentContainerProps {
   children: ReactNode;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from './Text';
-import { colors, spacing, borderRadius, typography } from '../design-system';
+import { colors, spacing, borderRadius, typography } from '../../design-system';
 
 interface ChipProps {
   label: string;

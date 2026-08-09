@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from '../design-system';
+import { colors, spacing } from '../../design-system';
 
 interface ScreenContainerProps {
   children: ReactNode;

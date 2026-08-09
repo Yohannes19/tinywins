@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text as RNText, StyleSheet } from 'react-native';
-import { typography, colors } from '../design-system';
+import { typography, colors } from '../../design-system';
 
 type TextVariant = 'h1' | 'h2' | 'h3' | 'h4' | 'body' | 'bodySmall' | 'caption' | 'button';
 
