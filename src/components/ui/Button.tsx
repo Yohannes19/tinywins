@@ -72,10 +72,11 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: colors.primary,
-    ...shadows.md,
+    ...shadows.primary,
   },
   secondary: {
     backgroundColor: colors.secondary,
+    ...shadows.sm,
   },
   outline: {
     backgroundColor: 'transparent',
@@ -108,6 +109,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontWeight: '600',
+    letterSpacing: 0.3,
   },
   primaryText: {
     color: '#FFFFFF',
