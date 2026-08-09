@@ -74,7 +74,8 @@ const styles = StyleSheet.create({
   label: {
     marginBottom: spacing.sm,
     color: colors.textPrimary,
-    fontWeight: '500',
+    fontWeight: '600',
+    fontSize: 14,
   },
   input: {
     backgroundColor: colors.surface,
@@ -86,6 +87,8 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.textPrimary,
     minHeight: 52,
+    fontSize: 16,
+    fontWeight: '400',
   },
   multiline: {
     minHeight: 100,
@@ -101,5 +104,6 @@ const styles = StyleSheet.create({
   errorText: {
     color: colors.error,
     marginTop: spacing.xs,
+    fontSize: 12,
   },
 });

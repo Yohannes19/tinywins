@@ -18,66 +18,66 @@
 export const Colors = {
   // PRIMARY BRAND COLORS
   primary: {
-    main: '#6C5DD3',      // Blurple - Main brand color
-    light: '#8B7FEA',     // Hover states, active elements
-    dark: '#4F46B5',      // Pressed states, depth
-    tint: '#F0EEFC',      // Background tints for primary elements
+    main: '#5B5FC7',      // Refined periwinkle - Main brand color
+    light: '#7B80D9',     // Hover states, active elements
+    dark: '#4A4DB8',      // Pressed states, depth
+    tint: '#EBEDF7',      // Background tints for primary elements
   },
 
   // SEMANTIC COLORS (Status & Feedback)
   success: {
-    main: '#00D2A0',      // Completed tasks, positive feedback
-    light: '#4CE9C6',
-    dark: '#00A680',
-    tint: '#E6F9F4',
+    main: '#10B981',      // Emerald green - Completed tasks, positive feedback
+    light: '#34D399',
+    dark: '#059669',
+    tint: '#ECFDF5',
   },
   warning: {
-    main: '#FFB800',      // Pending tasks, cautions
-    light: '#FFD54F',
-    dark: '#CC9500',
-    tint: '#FFF8E1',
+    main: '#F59E0B',      // Amber - Pending tasks, cautions
+    light: '#FBBF24',
+    dark: '#D97706',
+    tint: '#FFFBEB',
   },
   error: {
-    main: '#FF6B6B',      // Errors, deletions
-    light: '#FF8E8E',
-    dark: '#E05555',
-    tint: '#FFEDED',
+    main: '#EF4444',      // Red - Errors, deletions
+    light: '#F87171',
+    dark: '#DC2626',
+    tint: '#FEF2F2',
   },
   info: {
-    main: '#3ECF8E',      // Info badges, neutral positives
-    light: '#6EE7B7',
-    dark: '#2DA571',
-    tint: '#EDFDF5',
+    main: '#3B82F6',      // Blue - Info badges, neutral positives
+    light: '#60A5FA',
+    dark: '#2563EB',
+    tint: '#EFF6FF',
   },
 
   // NEUTRALS (Text & Backgrounds)
   neutral: {
     white: '#FFFFFF',
-    bgLight: '#F8F9FE',   // Main app background (Light Mode)
+    bgLight: '#F5F7FA',   // Main app background (Light Mode) - softer gray
     surfaceLight: '#FFFFFF', // Cards, inputs (Light Mode)
     
-    bgDark: '#12141D',    // Main app background (Dark Mode)
-    surfaceDark: '#1E2130', // Cards, inputs (Dark Mode)
+    bgDark: '#0F1115',    // Main app background (Dark Mode)
+    surfaceDark: '#1A1D24', // Cards, inputs (Dark Mode)
     
-    textPrimary: '#1F2937', // Headings, primary text
-    textSecondary: '#6B7280', // Body text, subtitles
-    textTertiary: '#9CA3AF', // Placeholders, disabled text
+    textPrimary: '#1A1A2E', // Headings, primary text - deeper navy
+    textSecondary: '#5A5A72', // Body text, subtitles - softer
+    textTertiary: '#9A9AAF', // Placeholders, disabled text
     textInverse: '#FFFFFF', // Text on dark backgrounds
     
-    border: '#E5E7EB',    // Dividers, borders
+    border: '#E8EAF0',    // Dividers, borders - softer
     borderFocus: '#6C5DD3', // Focused input borders
   },
 
   // TASK CATEGORY COLORS (Distinct & Accessible)
   categories: {
-    clean: { main: '#FF6B6B', light: '#FFE3E3', icon: '🧹' },
-    email: { main: '#4ECDC4', light: '#E0F7FA', icon: '📧' },
-    tax:   { main: '#FFD93D', light: '#FFF9C4', icon: '📄' },
-    laundry:{ main: '#A06CD5', light: '#F3E5F5', icon: '👕' },
-    dishes:{ main: '#FF8C42', light: '#FFE0B2', icon: '🍽️' },
-    shower:{ main: '#4D96FF', light: '#E3F2FD', icon: '🚿' },
-    call:  { main: '#FF6B9D', light: '#FCE4EC', icon: '📞' },
-    other: { main: '#95A5A6', light: '#ECEFF1', icon: '✨' },
+    clean: { main: '#EF4444', light: '#FEE2E2', icon: '🧹' },
+    email: { main: '#06B6D4', light: '#CCFBF1', icon: '📧' },
+    tax:   { main: '#F59E0B', light: '#FEF3C7', icon: '📄' },
+    laundry:{ main: '#8B5CF6', light: '#EDE9FE', icon: '👕' },
+    dishes:{ main: '#F97316', light: '#FFEDD5', icon: '🍽️' },
+    shower:{ main: '#3B82F6', light: '#DBEAFE', icon: '🚿' },
+    call:  { main: '#EC4899', light: '#FCE7F3', icon: '📞' },
+    other: { main: '#6B7280', light: '#F3F4F6', icon: '✨' },
   },
 
   // AWARD TIERS COLORS
@@ -243,10 +243,12 @@ export const Layout = {
 export const Borders = {
   radius: {
     none: 0,
+    xs: 4,    // Tiny accents
     sm: 8,    // Small chips, icons
     md: 12,   // Buttons, inputs
     lg: 16,   // Cards
-    xl: 24,   // Large containers, modals
+    xl: 20,   // Large containers, modals
+    xxl: 28,  // Extra large containers
     full: 9999, // Circles (Avatars, floating buttons)
   },
   
@@ -260,7 +262,7 @@ export const Borders = {
 // ==========================================
 // 5. SHADOWS & ELEVATION
 // ==========================================
-// Soft, diffused shadows for a modern "floating" feel
+// Refined shadows with softer, more diffused feel
 
 export const Shadows = {
   // Format: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation (Android) }
@@ -274,44 +276,44 @@ export const Shadows = {
   },
   
   sm: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowColor: '#1A1A2E',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
     elevation: 2,
   },
   
   md: {
-    shadowColor: '#000000',
+    shadowColor: '#1A1A2E',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
     elevation: 4,
   },
   
   lg: {
-    shadowColor: '#000000',
+    shadowColor: '#1A1A2E',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
     elevation: 8,
   },
   
   xl: {
-    shadowColor: '#000000',
+    shadowColor: '#1A1A2E',
     shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.2,
-    shadowRadius: 24,
+    shadowRadius: 32,
     elevation: 12,
   },
   
   // Colored shadows for specific interactions (e.g., Primary Button)
   primary: {
-    shadowColor: Colors.primary.main,
+    shadowColor: '#5B5FC7',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
 };
 
@@ -410,6 +412,9 @@ export const Theme = {
 
 export const colors = {
   primary: Colors.primary.main,
+  primaryLight: Colors.primary.light,
+  primaryDark: Colors.primary.dark,
+  primaryTint: Colors.primary.tint,
   secondary: Colors.primary.light,
   success: Colors.success.main,
   warning: Colors.warning.main,

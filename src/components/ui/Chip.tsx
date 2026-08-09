@@ -26,7 +26,7 @@ export const Chip: React.FC<ChipProps> = ({
     ? {
         backgroundColor: selectedColor || colors.primary,
         borderColor: selectedColor || colors.primary,
-        ...shadows.sm,
+        ...shadows.md,
       }
     : {};
 
@@ -50,6 +50,7 @@ export const Chip: React.FC<ChipProps> = ({
           selected && styles.selectedText,
           color && !selected && { color },
           icon && { marginLeft: 0 },
+          selected && { fontWeight: '600' },
         ]}
         numberOfLines={1}
       >
@@ -66,20 +67,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: borderRadius.full,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
     backgroundColor: colors.surface,
     marginRight: spacing.sm,
+    height: 36,
   },
   selected: {
-    borderWidth: 1,
+    borderWidth: 1.5,
   },
   text: {
     color: colors.textSecondary,
     fontWeight: '500',
+    fontSize: 14,
   },
   selectedText: {
     color: '#FFFFFF',
     fontWeight: '600',
+    fontSize: 14,
   },
 });

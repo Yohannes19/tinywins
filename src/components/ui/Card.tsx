@@ -5,7 +5,7 @@ import { colors, spacing, borderRadius, shadows } from '../../design-system';
 
 interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'elevated' | 'outlined';
+  variant?: 'default' | 'elevated' | 'outlined' | 'filled';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   elevation?: 'none' | 'sm' | 'md' | 'lg';
   style?: any;
@@ -16,7 +16,7 @@ export const Card: React.FC<CardProps> = ({
   children,
   variant = 'default',
   padding = 'md',
-  elevation = 'sm',
+  elevation = 'md',
   style,
 }) => {
   return (
@@ -36,20 +36,40 @@ export const Card: React.FC<CardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   default: {
     ...shadows.sm,
   },
   elevated: {
     ...shadows.md,
+    borderWidth: 0,
   },
   outlined: {
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
   },
-  none: {},
+  filled: {
+    backgroundColor: colors.primaryTint,
+    borderWidth: 0,
+    ...shadows.sm,
+  },
+  none: {
+    borderWidth: 0,
+    shadowColor: 'transparent',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+    elevation: 0,
+  },
   sm: {
     ...shadows.sm,
   },
